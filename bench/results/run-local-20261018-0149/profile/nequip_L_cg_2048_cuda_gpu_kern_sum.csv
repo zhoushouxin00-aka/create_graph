@@ -1,0 +1,449 @@
+Time (%),Total Time (ns),Instances,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+17.2,158800482,12,13233373.5,13334875.5,12290664,14078606,762359.1,triton_poi_fused__unsafe_view_add_clone_expand_mul_permute_scatter_add_slice_slice_backward_unsqueeze_view_66
+8.1,74219919,392,189336.5,184240.5,9440,282529,59434.2,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_128x256_16x3_nn_align1>(T1::Params)
+5.9,54482673,144,378351.9,355201.0,23328,780451,352597.7,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_64x64_16x6_nt_align1>(T1::Params)
+4.8,43864369,312,140590.9,175633.0,9568,181185,47710.8,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_128x256_16x3_tn_align1>(T1::Params)
+4.7,43553196,247,176328.7,16512.0,2240,421089,190354.9,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_64x64_16x6_nt_align4>(T1::Params)
+4.5,41070853,72,570428.5,581313.5,506050,620418,35374.1,"void gemmSN_TN_kernel<float, (int)128, (int)16, (int)2, (int)4, (int)8, (int)9, (bool)0, cublasGemvTensorStridedBatched<const float>, cublasGemvTensorStridedBatched<const float>, cublasGemvTensorStridedBatched<float>>(cublasGemmSmallNParams<T9, T10, T11, T1>)"
+3.2,29229509,180,162386.2,162720.5,136097,189121,15203.7,"void magma_sgemmEx_kernel<float, float, float, (bool)1, (bool)1, (int)6, (int)3, (int)6, (int)3, (int)4>(int, int, int, BatchedTensor, int, BatchedTensor, int, BatchedTensor, int, BatchedTensor, int, int, int, const T1 *, const T1 *, T1, T1, int, cublasLtEpilogue_t, int, const void *, long)"
+3.2,29145565,48,607199.3,611826.0,558561,651682,33545.5,"void gemmSN_TN_kernel<float, (int)128, (int)16, (int)2, (int)4, (int)4, (int)4, (bool)1, cublasGemvTensorStridedBatched<const float>, cublasGemvTensorStridedBatched<const float>, cublasGemvTensorStridedBatched<float>>(cublasGemmSmallNParams<T9, T10, T11, T1>)"
+1.8,16724758,12,1393729.8,1405781.0,1293540,1484549,80634.3,triton_poi_fused__unsafe_view_add_clone_expand_gather_mul_permute_unsqueeze_view_109
+1.8,16159794,12,1346649.5,1357556.5,1249252,1432868,77590.5,triton_poi_fused__unsafe_view_add_clone_expand_gather_mul_permute_select_unsqueeze_view_124
+1.5,13962067,247,56526.6,9952.0,1856,359841,116450.9,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_64x64_16x6_tn_align4>(T1::Params)
+1.4,13197547,12,1099795.6,1109107.5,1017155,1174244,65274.8,triton_poi_fused_add_expand_mul_permute_slice_squeeze_sum_unsqueeze_view_148
+1.4,12826346,313,40978.7,6560.0,2144,122656,50615.4,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_64x64_16x6_nn_align4>(T1::Params)
+1.4,12678634,12,1056552.8,1062275.5,975299,1134084,62201.8,triton_poi_fused_add_expand_mul_permute_slice_squeeze_sum_unsqueeze_view_110
+1.3,12079207,12,1006600.6,1015619.0,938883,1065796,53754.3,triton_poi_fused_expand_scatter_add_select_unsqueeze_71
+1.3,11815714,24,492321.4,496129.5,456705,523714,27451.5,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_64x64_16x6_tn_align1>(T1::Params)
+1.1,10002846,12,833570.5,840322.0,773667,886915,47723.7,triton_poi_fused__unsafe_view_add_bmm_cat_clone_expand_index_mul_permute_select_slice_squeeze_sum_unsqueeze_view_190
+1.0,9366525,70,133807.5,53248.0,3648,363745,143434.4,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_64x256_16x4_nn_align4>(T1::Params)
+1.0,8784445,9,976049.4,984803.0,904067,1039108,57708.3,triton_poi_fused_add_bmm_expand_mm_mul_permute_slice_squeeze_sum_transpose_unsqueeze_view_156
+0.9,8130299,9,903366.6,909155.0,838050,964868,53956.3,triton_poi_fused_add_bmm_expand_mul_permute_slice_squeeze_sum_transpose_unsqueeze_view_153
+0.8,7734457,140,55246.1,17776.0,4736,268001,85600.5,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_64x128_32x3_nt_align4>(T1::Params)
+0.8,7371255,9,819028.3,825027.0,758082,874563,49768.0,triton_poi_fused_add_bmm_expand_mm_mul_permute_slice_squeeze_sum_transpose_unsqueeze_view_151
+0.8,7268696,12,605724.7,608882.0,562050,644002,33901.3,triton_red_fused__unsafe_view_add_cat_clone_expand_index_mul_permute_select_slice_sum_unsqueeze_view_132
+0.8,7230807,12,602567.3,607538.0,557505,643330,35943.7,triton_red_fused__unsafe_view_add_cat_clone_expand_index_mul_permute_select_slice_sum_unsqueeze_view_153
+0.8,7117207,90,79080.1,79232.5,62208,90784,6576.0,"std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, float, float, float, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const float>, cublasGemvTensorStridedBatched<const float>, cublasGemvTensorStridedBatched<float>, float>>(T13)"
+0.7,6575734,45,146127.4,147297.0,123904,160961,8780.2,"std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, float, float, float, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)5, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const float>, cublasGemvTensorStridedBatched<const float>, cublasGemvTensorStridedBatched<float>, float>>(T13)"
+0.7,6294934,135,46629.1,45504.0,34976,65729,7234.2,"std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, float, float, float, float, (bool)0, (bool)1, (bool)0, (bool)0, (int)5, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const float>, cublasGemvTensorStridedBatched<const float>, cublasGemvTensorStridedBatched<float>, float>>(T13)"
+0.7,6277458,12,523121.5,528673.0,484162,557026,29211.9,triton_red_fused__unsafe_view_add_cat_clone_expand_index_mm_mul_permute_select_slice_sum_unsqueeze_view_145
+0.7,6077427,54,112544.9,3552.0,3264,271712,123517.1,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_64x64_32x6_tn_align4>(T1::Params)
+0.5,4897678,12,408139.8,412081.0,376609,435329,24139.6,triton_red_fused_add_mul_permute_sum_unsqueeze_view_154
+0.5,4875055,136,35846.0,9024.0,6688,100801,37083.0,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_64x256_16x4_nn_align1>(T1::Params)
+0.5,4794927,12,399577.3,402065.5,370049,427745,23612.0,triton_red_fused_add_mul_permute_sum_unsqueeze_view_157
+0.5,4677743,12,389811.9,394449.5,357377,417314,24227.7,triton_per_fused_add_bmm_expand_mul_permute_slice_squeeze_sum_transpose_unsqueeze_view_138
+0.5,4284845,12,357070.4,359985.0,329697,383137,21659.8,triton_red_fused_add_mm_mul_permute_sum_unsqueeze_view_152
+0.5,4283344,12,356945.3,357089.5,325058,382977,20939.0,triton_poi_fused_add_bmm_expand_mul_permute_slice_squeeze_sum_transpose_unsqueeze_view_155
+0.4,4042863,12,336905.3,340977.5,299265,359937,20173.4,triton_poi_fused_add_bmm_expand_mul_permute_slice_squeeze_sum_transpose_unsqueeze_view_147
+0.4,3724780,12,310398.3,312609.0,287809,331009,17638.8,triton_red_fused_add_expand_mul_permute_slice_squeeze_sum_transpose_unsqueeze_view_155
+0.4,3622988,12,301915.7,303377.0,277441,324865,19236.2,triton_poi_fused_add_bmm_expand_mul_permute_slice_squeeze_sum_transpose_unsqueeze_view_134
+0.4,3538347,12,294862.3,297169.0,269953,316225,19049.4,triton_poi_fused__unsafe_view_add_clone_expand_index_put_mul_permute_select_slice_squeeze_sum_unsqueeze_view_156
+0.3,3121451,12,260120.9,262225.0,238689,279233,16409.3,triton_red_fused__unsafe_view_add_cat_clone_expand_index_mm_mul_permute_select_slice_sum_unsqueeze_view_129
+0.3,3110188,12,259182.3,263409.0,209505,292225,25216.1,triton_poi_fused_add_expand_mul_permute_slice_unsqueeze_view_144
+0.3,3107083,12,258923.6,260641.0,237345,279073,16297.0,triton_per_fused_add_bmm_expand_mul_permute_slice_squeeze_sum_transpose_unsqueeze_view_147
+0.3,2984009,12,248667.4,250432.5,226945,272801,17259.6,triton_poi_fused_add_expand_mul_permute_slice_unsqueeze_view_54
+0.3,2917034,3,972344.7,980483.0,903043,1033508,65612.1,triton_poi_fused_add_bmm_expand_mm_mul_permute_slice_squeeze_sum_transpose_unsqueeze_view_167
+0.3,2897417,12,241451.4,241553.0,220992,266625,14370.9,triton_red_fused_add_expand_mul_permute_slice_sum_unsqueeze_view_60
+0.3,2817353,12,234779.4,236704.5,217889,250337,13177.8,triton_poi_fused__unsafe_view_add_clone_index_put_view_158
+0.3,2785258,12,232104.8,233585.0,212225,249985,15126.6,triton_poi_fused_add_expand_mul_permute_slice_unsqueeze_view_53
+0.3,2768521,12,230710.1,232801.0,213441,247617,13664.2,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_unsqueeze_view_70
+0.3,2700776,3,900258.7,907746.0,834947,958083,61908.5,triton_poi_fused_add_bmm_expand_mul_permute_slice_squeeze_sum_transpose_unsqueeze_view_166
+0.3,2699947,12,224995.6,225937.0,202433,247521,15977.7,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_unsqueeze_view_59
+0.3,2624840,12,218736.7,220048.5,203008,234817,12372.1,triton_red_fused_expand_mul_permute_slice_sum_unsqueeze_view_47
+0.3,2615430,12,217952.5,219968.5,196353,236833,15913.7,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_unsqueeze_view_57
+0.3,2579625,12,214968.8,215296.5,197345,237889,13523.4,triton_poi_fused_add_expand_mul_permute_slice_unsqueeze_view_51
+0.3,2539432,36,70539.8,71936.0,35968,81920,11687.0,triton_poi_fused_bmm_10
+0.3,2538151,112,22662.1,25952.0,8672,40449,11071.0,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_64x64_16x6_nn_align1>(T1::Params)
+0.3,2512133,15,167475.5,167808.0,154528,181536,9765.6,triton_poi_fused__unsafe_view_add_clone_expand_index_mul_permute_view_44
+0.3,2473993,12,206166.1,207952.5,189089,219648,12057.7,triton_red_fused_expand_mul_permute_slice_sum_unsqueeze_view_48
+0.3,2455045,15,163669.7,164321.0,151329,176576,9351.7,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_view_43
+0.3,2448745,3,816248.3,822787.0,757667,868291,55601.1,triton_poi_fused_add_bmm_expand_mm_mul_permute_slice_squeeze_sum_transpose_unsqueeze_view_165
+0.3,2418789,12,201565.8,201632.0,181857,218273,13421.3,triton_per_fused_add_bmm_expand_mul_permute_slice_squeeze_sum_transpose_unsqueeze_view_142
+0.3,2400328,12,200027.3,201265.0,176800,224193,16573.3,triton_poi_fused_add_expand_mm_mul_permute_slice_unsqueeze_view_130
+0.3,2393255,36,66479.3,67888.5,51072,80640,8320.6,triton_poi_fused_mul_permute_sum_view_50
+0.3,2383207,12,198600.6,201345.0,183296,214208,11541.8,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_unsqueeze_view_48
+0.3,2339432,12,194952.7,196096.5,180545,207776,11227.0,triton_red_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_sum_unsqueeze_view_177
+0.3,2311273,12,192606.1,192689.0,179553,204737,9342.4,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_unsqueeze_view_50
+0.2,2280295,12,190024.6,192433.0,173824,204001,11670.2,triton_red_fused_expand_mul_permute_slice_sum_unsqueeze_view_46
+0.2,2252806,12,187733.8,189328.5,168576,206753,13771.8,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_unsqueeze_view_61
+0.2,2193957,24,91414.9,92608.5,73632,110240,13003.3,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_unsqueeze_view_51
+0.2,2167942,12,180661.8,181488.5,166817,193121,10836.7,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_unsqueeze_view_69
+0.2,2167046,12,180587.2,182401.0,164512,194208,10891.0,triton_red_fused_expand_mul_permute_slice_sum_unsqueeze_view_123
+0.2,2006567,12,167213.9,166833.0,152928,183744,10209.8,triton_per_fused__unsafe_view_bmm_cat_clone_expand_index_mul_permute_select_slice_squeeze_sum_unsqueeze_view_180
+0.2,1913799,12,159483.3,161472.5,144704,171041,10196.2,triton_poi_fused_add_expand_mul_permute_slice_unsqueeze_view_64
+0.2,1857223,12,154768.6,156512.5,142272,164641,9144.7,triton_poi_fused_expand_mul_permute_slice_sum_unsqueeze_view_135
+0.2,1830694,12,152557.8,152736.5,139649,166593,9437.7,triton_red_fused_add_expand_mul_permute_slice_sum_unsqueeze_view_59
+0.2,1810632,12,150886.0,151697.0,139936,160641,8280.6,triton_poi_fused_mul_permute_slice_sum_view_189
+0.2,1808292,12,150691.0,152032.5,139489,160512,8671.8,triton_poi_fused_mul_permute_slice_sum_view_119
+0.2,1801063,12,150088.6,151616.5,137024,161793,10255.9,triton_poi_fused_expand_mul_permute_slice_unsqueeze_view_144
+0.2,1800358,12,150029.8,151185.0,138400,159425,8045.5,triton_red_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_sum_unsqueeze_view_176
+0.2,1775207,12,147933.9,148304.5,134785,160896,10293.5,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_unsqueeze_view_67
+0.2,1736932,12,144744.3,146208.0,130369,155969,9715.8,triton_poi_fused_bmm_permute_slice_view_140
+0.2,1731942,12,144328.5,145472.5,129633,158368,11379.5,triton_red_fused_add_mm_mul_permute_sum_unsqueeze_view_143
+0.2,1710982,12,142581.8,143361.0,130624,153665,9042.5,triton_poi_fused_mul_permute_sum_view_52
+0.2,1610085,12,134173.8,134624.0,126784,144353,4730.5,triton_poi_fused_add_expand_mul_permute_slice_unsqueeze_view_63
+0.2,1567877,12,130656.4,130496.0,119488,148385,9141.1,triton_poi_fused_add_mul_permute_slice_sum_view_111
+0.2,1531010,12,127584.2,128320.0,116993,136960,7645.2,triton_poi_fused_bmm_permute_slice_view_145
+0.2,1521317,128,11885.3,8960.0,6912,50048,10362.9,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_64x256_16x4_tn_align1>(T1::Params)
+0.2,1507013,15,100467.5,103232.0,84544,110113,7669.0,triton_poi_fused_add_mul_neg_sigmoid_sigmoid_backward_silu_backward_149
+0.2,1504227,12,125352.3,125088.5,110016,139841,10851.6,triton_poi_fused_expand_mul_permute_slice_sum_unsqueeze_view_136
+0.2,1499045,12,124920.4,126000.5,114433,134913,8131.9,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_unsqueeze_view_68
+0.2,1435395,12,119616.3,119968.0,97568,151104,15530.3,triton_poi_fused_add_expand_mul_permute_slice_unsqueeze_view_132
+0.2,1389926,12,115827.2,118097.0,103328,126145,8730.6,triton_poi_fused_bmm_permute_slice_view_141
+0.1,1377251,12,114770.9,118704.0,81760,131136,15374.0,triton_poi_fused_add_expand_mul_permute_slice_unsqueeze_view_133
+0.1,1364036,12,113669.7,114641.0,104288,121376,6085.1,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_unsqueeze_view_55
+0.1,1335011,12,111250.9,107296.5,82080,148160,24953.3,triton_poi_fused_add_expand_mul_permute_slice_unsqueeze_view_131
+0.1,1333634,12,111136.2,112224.5,100416,120768,7804.6,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_unsqueeze_view_45
+0.1,1331141,12,110928.4,111728.5,102368,120161,6619.5,triton_red_fused_expand_mul_permute_slice_sum_unsqueeze_view_122
+0.1,1320516,12,110043.0,110992.5,101184,118977,6444.1,triton_red_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_sum_unsqueeze_view_175
+0.1,1313988,12,109499.0,111120.5,97760,120320,8880.8,triton_poi_fused_bmm_permute_slice_view_146
+0.1,1282436,40,32060.9,41456.0,12064,51616,16675.5,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_128x128_32x3_nn_align4>(T1::Params)
+0.1,1243428,12,103619.0,105376.5,89248,113441,7650.1,triton_red_fused_expand_mul_permute_slice_sum_unsqueeze_view_45
+0.1,1229061,12,102421.8,99776.5,92224,127073,10387.9,triton_poi_fused_add_expand_mul_permute_slice_unsqueeze_view_49
+0.1,1225700,12,102141.7,101312.5,91104,114752,6993.3,triton_red_fused_add_expand_mul_permute_slice_sum_unsqueeze_view_58
+0.1,1183235,12,98602.9,106224.0,36576,123136,26135.9,triton_poi_fused_add_expand_mm_mul_permute_slice_unsqueeze_view_19
+0.1,1081923,12,90160.3,89680.5,82016,101696,6434.0,triton_per_fused__unsafe_view_bmm_cat_clone_expand_index_mul_permute_select_slice_squeeze_sum_unsqueeze_view_179
+0.1,1045123,24,43546.8,43888.0,39360,48000,2751.1,triton_poi_fused__unsafe_view_bmm_cat_clone_expand_index_mul_permute_select_slice_transpose_unsqueeze_view_163
+0.1,1021221,12,85101.8,86688.0,75297,93632,5773.8,triton_poi_fused_expand_mul_permute_slice_sum_unsqueeze_view_137
+0.1,968419,12,80701.6,81168.0,73856,87552,4426.9,triton_red_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_sum_unsqueeze_view_138
+0.1,967972,12,80664.3,80080.0,72513,89857,5916.5,triton_poi_fused_expand_mm_mul_permute_slice_unsqueeze_view_143
+0.1,956770,15,63784.7,56128.0,46496,100608,17411.4,triton_poi_fused_add_mul_sigmoid_20
+0.1,942820,12,78568.3,78961.0,61600,93696,9704.6,triton_poi_fused_add_expand_mm_mul_permute_slice_unsqueeze_view_128
+0.1,939302,12,78275.2,77889.0,72737,86049,4651.7,triton_poi_fused_mul_permute_slice_sum_view_186
+0.1,938114,12,78176.2,79312.0,72096,82913,4421.6,triton_poi_fused_mul_permute_slice_sum_view_187
+0.1,932610,12,77717.5,78032.0,71457,83456,4736.6,triton_poi_fused_mul_permute_slice_sum_view_117
+0.1,932515,12,77709.6,78368.0,71329,83808,4588.8,triton_per_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_squeeze_sum_view_178
+0.1,932482,12,77706.8,78272.0,72192,82305,3883.5,triton_poi_fused_mul_permute_slice_sum_view_188
+0.1,927815,12,77317.9,77841.0,71520,82337,4374.2,triton_poi_fused_mul_permute_slice_sum_view_116
+0.1,926467,12,77205.6,77104.0,71040,83424,4752.6,triton_poi_fused_mul_permute_slice_sum_view_118
+0.1,915585,387,2365.9,2016.0,1088,4896,1165.5,"void cublasLt::splitKreduce_kernel<(int)32, (int)16, int, float, float, float, float, (bool)0, float, float, float, (bool)1, (bool)0, (bool)0, (bool)0>(cublasLt::cublasSplitKParams<T6>, const T4 *, const T10 *, T9 *, T5 *, const T6 *, const T6 *, const T11 *, const T4 *, T11 *, void *, long, T6 *, int *, T6 *, T6 *, const T6 *, const T6 *, const T6 *, const T6 *, const T6 *)"
+0.1,912161,18,50675.6,51904.0,33792,54496,6130.2,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_256x64_16x4_tn_align4>(T1::Params)
+0.1,847363,3,282454.3,284001.0,262785,300577,18943.4,triton_poi_fused_add_bmm_expand_gather_index_put_mul_permute_slice_squeeze_transpose_unsqueeze_view_81
+0.1,831171,60,13852.9,10176.0,8864,31265,7697.7,"void magma_sgemmEx_kernel<float, float, float, (bool)1, (bool)0, (int)6, (int)4, (int)6, (int)3, (int)4>(int, int, int, BatchedTensor, int, BatchedTensor, int, BatchedTensor, int, BatchedTensor, int, int, int, const T1 *, const T1 *, T1, T1, int, cublasLtEpilogue_t, int, const void *, long)"
+0.1,814821,12,67901.8,68401.0,61888,72448,3538.5,triton_red_fused_expand_mul_permute_slice_sum_view_121
+0.1,801090,16,50068.1,49840.0,48032,54240,1715.7,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_128x128_16x4_nt_align4>(T1::Params)
+0.1,797091,12,66424.3,66736.5,59840,72416,5137.2,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_unsqueeze_view_66
+0.1,795843,12,66320.3,71376.0,41345,79328,13295.5,triton_poi_fused_expand_scatter_add_unsqueeze_43
+0.1,781796,12,65149.7,65184.5,60480,70017,3632.7,triton_poi_fused_add_mul_permute_slice_sum_view_113
+0.1,781216,24,32550.7,32128.0,18688,43392,8814.0,triton_poi_fused_add_bmm_expand_mul_permute_slice_unsqueeze_view_65
+0.1,780163,12,65013.6,64849.0,58720,71200,4785.0,triton_poi_fused_expand_mul_permute_slice_unsqueeze_view_128
+0.1,779168,12,64930.7,65776.0,59424,69280,3773.6,triton_poi_fused_add_mul_permute_slice_sum_view_114
+0.1,773762,12,64480.2,64768.0,59392,69088,3756.1,triton_poi_fused_add_mul_permute_slice_sum_view_112
+0.1,767392,12,63949.3,64368.0,57312,70784,4990.4,triton_poi_fused_expand_mul_permute_slice_unsqueeze_view_152
+0.1,765507,12,63792.3,64528.5,57504,69600,4821.1,triton_poi_fused_expand_mul_permute_slice_unsqueeze_view_131
+0.1,714978,12,59581.5,59616.0,50272,72064,6809.3,triton_poi_fused_add_expand_mul_permute_slice_unsqueeze_view_61
+0.1,695778,3,231926.0,235969.0,210304,249505,19910.8,triton_poi_fused_add_expand_mul_permute_scatter_add_slice_unsqueeze_view_73
+0.1,683170,12,56930.8,55680.0,47777,72512,7842.8,triton_poi_fused_bmm_permute_slice_view_150
+0.1,657890,12,54824.2,52032.0,43616,72544,8542.4,triton_poi_fused_bmm_permute_slice_view_149
+0.1,652354,3,217451.3,218976.0,196769,236609,19963.7,triton_poi_fused_add_expand_gather_mul_permute_slice_unsqueeze_view_78
+0.1,647842,12,53986.8,54672.0,43552,65441,7872.6,triton_poi_fused_add_expand_mul_permute_slice_unsqueeze_view_127
+0.1,644770,12,53730.8,54352.0,45761,62240,5600.3,triton_poi_fused_bmm_permute_slice_view_134
+0.1,642432,12,53536.0,52960.0,39328,70848,9614.0,triton_poi_fused_bmm_permute_slice_view_125
+0.1,632257,12,52688.1,53088.0,46464,58592,4980.9,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_unsqueeze_view_64
+0.1,628385,12,52365.4,53728.0,44384,59776,6091.4,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_unsqueeze_view_63
+0.1,627107,12,52258.9,53184.0,45184,60480,5393.3,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_unsqueeze_view_65
+0.1,618723,12,51560.3,52289.0,45888,56672,4481.2,triton_poi_fused_bmm_permute_slice_view_139
+0.1,615907,3,205302.3,207297.0,190657,217953,13756.9,triton_poi_fused_slice_backward_209
+0.1,615490,36,17096.9,17184.0,12704,21216,2356.4,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_unsqueeze_view_46
+0.1,606945,12,50578.8,47184.0,41152,69440,9818.5,triton_poi_fused_add_expand_mul_permute_slice_view_129
+0.1,600451,12,50037.6,48880.5,42528,59136,6010.4,triton_poi_fused_add_expand_mul_permute_slice_unsqueeze_view_126
+0.1,586755,3,195585.0,197729.0,180865,208161,13773.7,triton_poi_fused_add_expand_mul_permute_scatter_add_slice_slice_backward_unsqueeze_view_25
+0.1,582562,15,38837.5,38880.0,29280,56128,7293.9,triton_poi_fused_add_fill_mul_sigmoid_sub_191
+0.1,575972,12,47997.7,48064.0,39648,55456,5196.1,triton_poi_fused_bmm_permute_slice_view_137
+0.1,560578,12,46714.8,47424.0,39168,52640,5012.2,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_unsqueeze_view_62
+0.1,549091,12,45757.6,46048.0,39328,51425,4294.5,triton_poi_fused_expand_mm_mul_permute_slice_unsqueeze_view_127
+0.1,540770,15,36051.3,36352.0,30112,40864,2667.9,triton_red_fused_expand_mul_permute_slice_sum_unsqueeze_view_37
+0.1,536897,3,178965.7,180928.0,163553,192416,14531.2,triton_poi_fused_add_expand_gather_index_put_mul_new_zeros_permute_slice_squeeze_sum_unsqueeze_view_172
+0.1,536003,12,44666.9,49744.5,12864,57216,15068.8,triton_poi_fused_add_expand_mm_mul_permute_slice_unsqueeze_view_8
+0.1,502017,12,41834.8,42432.0,26816,53920,8880.8,triton_poi_fused_expand_mm_mul_permute_slice_unsqueeze_view_142
+0.1,500067,3,166689.0,167681.0,155009,177377,11216.9,triton_poi_fused__unsafe_view_add_bmm_clone_expand_gather_index_put_mul_permute_select_slice_squeeze_transpose_unsqueeze_view_101
+0.1,485857,16,30366.1,30176.0,9024,51808,21660.6,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_128x128_16x5_tn_align4>(T1::Params)
+0.1,477059,44,10842.3,5712.0,4640,36800,10622.1,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_64x64_32x6_nn_align4>(T1::Params)
+0.0,443648,8,55456.0,55472.0,54944,56352,467.2,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_64x256_16x4_nt_align4>(T1::Params)
+0.0,430434,3,143478.0,145249.0,136064,149121,6706.2,triton_red_fused_add_embedding_dense_backward_mul_permute_squeeze_sum_view_177
+0.0,425634,12,35469.5,36256.0,28544,38464,2727.9,triton_poi_fused__unsafe_view_bmm_cat_clone_expand_index_mul_permute_select_slice_transpose_unsqueeze_view_161
+0.0,418400,12,34866.7,34544.0,32448,37376,1518.6,triton_poi_fused_expand_mul_permute_slice_unsqueeze_view_130
+0.0,408801,12,34066.8,34912.5,30464,37088,2534.7,triton_poi_fused_add_transpose_106
+0.0,377760,3,125920.0,125632.0,123680,128448,2397.0,triton_per_fused__to_copy_add_cos_div_expand_index_select_masked_fill_mul_neg_pow_scalar_tensor_sin_sinc_sub_sum_where_9
+0.0,367265,12,30605.4,30848.0,28704,32384,1428.6,triton_poi_fused__unsafe_view_clone_permute_slice_view_77
+0.0,347329,12,28944.1,29104.0,25985,32128,1891.3,triton_poi_fused_expand_mul_permute_slice_view_146
+0.0,344098,36,9558.3,7280.0,6496,16672,3900.1,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_64x128_32x3_tn_align4>(T1::Params)
+0.0,334144,3,111381.3,112992.0,102944,118208,7758.4,triton_poi_fused_slice_backward_208
+0.0,330210,3,110070.0,111553.0,101825,116832,7612.6,triton_poi_fused_cat_expand_index_mul_permute_scatter_add_select_slice_unsqueeze_view_29
+0.0,317792,15,21186.1,20416.0,16928,27104,2989.7,triton_poi_fused_expand_scatter_add_select_unsqueeze_23
+0.0,316961,3,105653.7,105185.0,98656,113120,7243.4,triton_red_fused_add_expand_gather_mul_permute_slice_sum_unsqueeze_view_77
+0.0,308034,15,20535.6,20736.0,18848,21984,993.5,triton_poi_fused_expand_mul_permute_slice_unsqueeze_view_79
+0.0,305312,12,25442.7,25520.0,22848,28224,1712.7,triton_poi_fused_expand_mul_permute_slice_unsqueeze_view_151
+0.0,303873,12,25322.8,25936.0,21728,27424,2046.2,triton_poi_fused__unsafe_view_clone_permute_slice_view_70
+0.0,301345,3,100448.3,101984.0,93505,105856,6317.1,triton_poi_fused__to_copy_add_mul_permute_squeeze_transpose_view_183
+0.0,296385,24,12349.4,12400.0,10880,14368,1031.7,triton_poi_fused_add_bmm_transpose_135
+0.0,293888,3,97962.7,101056.0,90432,102400,6556.3,triton_poi_fused__unsafe_view_add_cat_clone_expand_gather_index_mul_permute_select_slice_unsqueeze_view_184
+0.0,292066,12,24338.8,24752.0,22273,26721,1442.7,triton_poi_fused_add_expand_mul_permute_slice_view_124
+0.0,285250,12,23770.8,24032.0,21472,26400,1613.1,triton_poi_fused_add_expand_mul_permute_slice_view_125
+0.0,283712,12,23642.7,23968.0,18528,29696,3963.7,triton_poi_fused_add_bmm_expand_mul_permute_slice_unsqueeze_view_62
+0.0,274882,12,22906.8,22896.0,20737,24672,1457.9,triton_per_fused_mul_permute_slice_sum_view_55
+0.0,270561,24,11273.4,11376.5,9920,12288,695.2,triton_poi_fused_bmm_permute_transpose_unsqueeze_view_148
+0.0,236448,3,78816.0,78016.0,74592,83840,4675.6,triton_poi_fused__to_copy_add_clamp_min_div_expand_linalg_vector_norm_mul_neg_pow_select_select_backward_sub_13
+0.0,236000,12,19666.7,20064.0,17280,22240,1717.0,triton_poi_fused__unsafe_view_clone_permute_slice_view_76
+0.0,232160,3,77386.7,77760.0,70464,83936,6743.8,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_scatter_add_select_slice_unsqueeze_view_88
+0.0,231072,3,77024.0,77152.0,71904,82016,5057.2,triton_per_fused__to_copy_add_cos_div_expand_mul_neg_scalar_tensor_sin_sinc_sub_sum_where_174
+0.0,229856,3,76618.7,74528.0,67008,88320,10808.7,triton_red_fused__unsafe_view_cat_clone_expand_gather_index_mul_permute_select_slice_sum_unsqueeze_view_100
+0.0,225985,12,18832.1,18928.5,16384,21280,1850.5,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_unsqueeze_view_60
+0.0,223648,12,18637.3,18992.0,16800,20736,1350.9,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_unsqueeze_view_58
+0.0,222144,54,4113.8,3968.0,3200,5824,664.9,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_64x64_16x10_nt_align4>(T1::Params)
+0.0,213985,3,71328.3,68576.0,68481,76928,4849.7,triton_per_fused__to_copy_add_cos_div_eq_mul_neg_pow_scalar_tensor_sin_sinc_sub_sum_where_196
+0.0,209858,24,8744.1,8736.0,8512,9025,109.9,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_128x256_16x3_tn_align4>(T1::Params)
+0.0,208417,18,11578.7,11328.0,9504,14016,1547.0,triton_poi_fused_silu_22
+0.0,205313,3,68437.7,68608.0,60800,75905,7553.9,triton_poi_fused_add_fill_mul_neg_sigmoid_sigmoid_backward_silu_backward_sub_82
+0.0,204930,6,34155.0,34032.5,31393,36352,1740.9,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_64x128_16x6_nt_align4>(T1::Params)
+0.0,202912,12,16909.3,16784.0,14240,19104,1404.5,triton_poi_fused__unsafe_view_clone_permute_slice_view_69
+0.0,201568,15,13437.9,13440.0,12352,14048,549.7,triton_per_fused_expand_mul_permute_sum_unsqueeze_view_106
+0.0,200866,24,8369.4,8400.0,8096,8672,179.0,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_64x128_32x3_nn_align4>(T1::Params)
+0.0,194912,3,64970.7,64480.0,59232,71200,5999.1,triton_poi_fused_expand_gather_select_unsqueeze_170
+0.0,194752,16,12172.0,12160.0,11680,13024,371.9,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_128x128_32x3_tn_align4>(T1::Params)
+0.0,194176,24,8090.7,8080.0,7552,8896,334.0,triton_poi_fused_add_transpose_103
+0.0,193538,3,64512.7,62465.0,58976,72097,6795.9,triton_poi_fused__to_copy_add_mul_permute_squeeze_view_181
+0.0,185985,12,15498.8,15408.5,13440,19616,1628.0,triton_poi_fused_expand_mul_permute_slice_view_154
+0.0,184224,12,15352.0,15792.0,13280,17056,1483.8,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_unsqueeze_view_54
+0.0,181857,12,15154.8,14960.0,12640,18624,1710.2,triton_poi_fused_expand_mul_permute_slice_view_133
+0.0,180513,15,12034.2,12096.0,10720,13120,598.0,triton_poi_fused_add_copy_expand_mul_permute_slice_unsqueeze_view_35
+0.0,171906,24,7162.8,7200.0,6400,8161,440.9,triton_poi_fused_add_bmm_mm_permute_squeeze_transpose_view_136
+0.0,170784,3,56928.0,59680.0,48128,62976,7797.2,"std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, double, double, double, double, (bool)0, (bool)1, (bool)0, (bool)0, (int)5, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const double>, cublasGemvTensorStridedBatched<const double>, cublasGemvTensorStridedBatched<double>, double>>(T13)"
+0.0,166145,12,13845.4,13472.5,12000,15488,1251.5,triton_poi_fused__unsafe_view_add_clone_mul_permute_view_71
+0.0,158785,8,19848.1,19936.0,19328,20096,272.0,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_128x128_16x5_nn_align4>(T1::Params)
+0.0,157728,12,13144.0,13472.0,10816,13984,863.3,triton_per_fused_expand_mul_permute_sum_unsqueeze_view_105
+0.0,154816,12,12901.3,12976.0,12000,14176,727.1,triton_poi_fused_add_permute_squeeze_transpose_view_107
+0.0,154048,12,12837.3,12832.0,9728,15712,1967.7,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_unsqueeze_view_56
+0.0,151905,24,6329.4,6336.0,5728,7264,414.6,triton_poi_fused_add_transpose_115
+0.0,151008,20,7550.4,3808.0,3520,13920,4762.8,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_64x256_16x4_tn_align4>(T1::Params)
+0.0,150464,12,12538.7,12736.0,11552,13536,720.4,triton_per_fused_mul_permute_slice_sum_view_56
+0.0,147040,4,36760.0,36720.0,36608,36992,168.1,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_256x128_16x3_tn_align4>(T1::Params)
+0.0,145920,3,48640.0,47424.0,42208,56288,7118.3,triton_poi_fused_add_expand_gather_mul_permute_slice_squeeze_unsqueeze_view_173
+0.0,145537,15,9702.5,9825.0,9152,10624,407.9,triton_poi_fused_cat_expand_mul_permute_silu_slice_unsqueeze_view_38
+0.0,144704,24,6029.3,5248.0,4736,11776,2051.3,triton_poi_fused_bmm_permute_unsqueeze_view_17
+0.0,138976,12,11581.3,11808.0,10656,12288,582.5,triton_poi_fused_bmm_permute_unsqueeze_view_18
+0.0,136192,24,5674.7,5696.0,5408,6208,185.8,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_64x64_32x6_nt_align4>(T1::Params)
+0.0,131521,3,43840.3,43648.0,43488,44385,478.4,triton_poi_fused_add_clamp_min_div_expand_index_select_linalg_vector_norm_masked_fill_mul_neg_pow_scalar_tensor_select_sum_where_185
+0.0,129024,12,10752.0,10832.0,9984,11200,423.9,triton_poi_fused__unsafe_view_add_clone_mul_permute_squeeze_view_159
+0.0,128929,12,10744.1,10800.5,9984,11552,422.4,triton_poi_fused__unsafe_view_add_cat_clone_mul_permute_view_81
+0.0,128064,3,42688.0,42816.0,40192,45056,2434.5,triton_poi_fused_add_fill_mul_sigmoid_sub_42
+0.0,125089,3,41696.3,41249.0,39712,44128,2241.7,triton_poi_fused_add_expand_gather_mul_permute_slice_unsqueeze_view_79
+0.0,123040,12,10253.3,10336.0,9760,10688,369.8,triton_poi_fused_add_expand_mul_permute_slice_unsqueeze_view_160
+0.0,120160,12,10013.3,10112.0,9440,10432,367.5,triton_poi_fused_add_clone_copy_mul_neg_sigmoid_sigmoid_backward_silu_backward_slice_164
+0.0,119586,3,39862.0,39905.0,38208,41473,1632.9,triton_poi_fused_expand_gather_mul_permute_select_slice_sum_unsqueeze_view_192
+0.0,118720,24,4946.7,4960.0,3680,6080,799.9,triton_poi_fused_add_mm_permute_squeeze_transpose_view_120
+0.0,116769,15,7784.6,7904.0,7232,8352,366.6,triton_poi_fused_add_expand_mul_permute_slice_squeeze_unsqueeze_view_119
+0.0,116288,12,9690.7,9744.0,9216,10016,255.2,triton_poi_fused_add_expand_mul_neg_permute_sigmoid_backward_silu_backward_slice_squeeze_sum_view_163
+0.0,115744,15,7716.3,7712.0,7296,8320,282.3,triton_poi_fused_add_copy_mul_permute_slice_sum_view_32
+0.0,115488,3,38496.0,38272.0,36608,40608,2009.4,triton_per_fused_expand_mul_permute_slice_sum_unsqueeze_view_24
+0.0,115456,16,7216.0,7248.0,7008,7424,119.7,void cutlass::Kernel2<cutlass_80_tensorop_s1688gemm_128x256_16x3_nn_align4>(T1::Params)
+0.0,114912,12,9576.0,9776.0,8448,10560,756.4,triton_poi_fused_add_mul_sigmoid_slice_36
+0.0,113792,3,37930.7,36832.0,34720,42240,3878.5,triton_poi_fused_slice_backward_207
+0.0,113344,24,4722.7,4640.0,3744,5728,492.1,triton_poi_fused_bmm_permute_transpose_unsqueeze_view_139
+0.0,109088,24,4545.3,4560.0,3936,5856,432.8,triton_poi_fused_bmm_clone_permute_squeeze_view_164
+0.0,108513,12,9042.8,8976.0,7840,10369,782.4,triton_poi_fused_add_bmm_transpose_140
+0.0,108416,12,9034.7,9056.0,8224,9632,424.8,triton_poi_fused__unsafe_view_clone_permute_slice_view_68
+0.0,107392,12,8949.3,8960.0,8576,9248,173.8,triton_poi_fused__unsafe_view_add_clone_permute_slice_backward_view_108
+0.0,106752,12,8896.0,8704.0,7648,10624,972.0,triton_poi_fused_expand_mm_mul_permute_slice_unsqueeze_view_126
+0.0,102240,12,8520.0,8656.0,7776,9088,448.6,triton_poi_fused__unsafe_view_add_clone_mul_permute_squeeze_view_157
+0.0,101025,3,33675.0,33888.0,31200,35937,2375.7,triton_poi_fused_add_expand_gather_mul_permute_slice_unsqueeze_view_80
+0.0,98977,12,8248.1,8144.0,7904,8704,275.1,triton_poi_fused__unsafe_view_clone_permute_slice_view_73
+0.0,97664,3,32554.7,33568.0,27424,36672,4706.5,triton_poi_fused_expand_gather_permute_select_unsqueeze_view_96
+0.0,96384,12,8032.0,7856.0,7072,9792,766.2,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_unsqueeze_view_52
+0.0,91712,12,7642.7,7808.0,6912,8160,404.3,triton_poi_fused__unsafe_view_cat_clone_expand_index_mul_permute_select_slice_unsqueeze_view_53
+0.0,90528,3,30176.0,30496.0,28320,31712,1718.5,triton_poi_fused_expand_gather_mul_permute_select_slice_sum_unsqueeze_view_193
+0.0,89952,12,7496.0,7472.0,6560,8256,477.2,triton_per_fused_mul_permute_slice_sum_view_57
+0.0,88320,15,5888.0,6016.0,5344,6400,347.0,triton_poi_fused_add_copy_mul_permute_slice_sum_view_31
+0.0,84161,24,3506.7,3488.0,3232,3840,153.6,triton_poi_fused_add_permute_squeeze_transpose_view_104
+0.0,83360,3,27786.7,27520.0,26496,29344,1442.6,triton_poi_fused_add_fill_mul_sigmoid_sub_185
+0.0,81760,3,27253.3,27264.0,25408,29088,1840.0,triton_per_fused_expand_mul_permute_slice_sum_unsqueeze_view_23
+0.0,80960,3,26986.7,26752.0,26528,27680,610.8,triton_poi_fused__to_copy_add_clamp_min_div_expand_linalg_vector_norm_mul_neg_pow_select_view_183
+0.0,79488,3,26496.0,25728.0,25312,28448,1703.2,triton_poi_fused__to_copy_mul_sinc_21
+0.0,78496,12,6541.3,6336.0,5696,8960,831.7,triton_poi_fused_bmm_permute_transpose_unsqueeze_view_95
+0.0,76128,3,25376.0,25152.0,20608,30368,4883.9,triton_per_fused_expand_gather_index_mul_permute_select_slice_sum_unsqueeze_view_171
+0.0,75841,3,25280.3,24577.0,24480,26784,1303.1,triton_poi_fused_add_clamp_min_div_expand_linalg_vector_norm_mul_neg_pow_select_sub_184
+0.0,74880,3,24960.0,25984.0,22240,26656,2379.4,triton_per_fused_expand_gather_index_mul_permute_select_slice_sum_unsqueeze_view_173
+0.0,71744,3,23914.7,23904.0,23488,24352,432.1,triton_poi_fused_add_clamp_min_div_expand_index_select_linalg_vector_norm_mul_neg_scalar_tensor_where_11
+0.0,68032,12,5669.3,5616.0,5280,6080,294.5,triton_poi_fused_add_bmm_mm_permute_squeeze_transpose_view_141
+0.0,67584,3,22528.0,21216.0,17728,28640,5573.1,triton_per_fused_expand_gather_index_mul_permute_select_slice_sum_unsqueeze_view_172
+0.0,64800,3,21600.0,21760.0,20096,22944,1430.7,triton_per_fused_expand_mul_permute_slice_sum_unsqueeze_view_22
+0.0,64672,24,2694.7,2576.0,2208,3392,391.8,triton_poi_fused_clone_permute_squeeze_view_160
+0.0,63265,12,5272.1,5264.0,4896,5792,270.6,triton_poi_fused_add_clone_copy_mul_sigmoid_slice_120
+0.0,62656,15,4177.1,4256.0,3808,4544,227.8,triton_poi_fused_add_copy_mul_permute_slice_sum_view_33
+0.0,62369,12,5197.4,5264.0,4448,5632,320.3,triton_poi_fused__unsafe_view_clone_permute_slice_view_78
+0.0,59648,3,19882.7,19808.0,18752,21088,1169.8,triton_poi_fused_add_clamp_min_div_expand_index_add_linalg_vector_norm_masked_fill_mul_neg_scalar_tensor_select_sum_view_where_197
+0.0,59328,15,3955.2,3968.0,3776,4192,106.0,triton_poi_fused_add_mul_slice_34
+0.0,54176,3,18058.7,18016.0,16896,19264,1184.6,triton_poi_fused_expand_gather_mul_permute_select_slice_sum_unsqueeze_view_194
+0.0,53472,3,17824.0,17856.0,17536,18080,273.4,triton_poi_fused__to_copy_add_clamp_min_div_eq_expand_ge_linalg_vector_norm_mul_neg_pow_select_sub_view_182
+0.0,53280,3,17760.0,18816.0,15456,19008,1997.6,triton_poi_fused_expand_gather_mul_permute_select_slice_unsqueeze_view_99
+0.0,50848,12,4237.3,4272.0,3232,5248,611.5,triton_poi_fused_mul_permute_slice_view_72
+0.0,50626,15,3375.1,3232.0,2944,5088,531.5,triton_poi_fused_add_expand_mul_permute_slice_squeeze_sum_view_108
+0.0,49632,3,16544.0,16256.0,14880,18496,1825.1,triton_poi_fused_add_expand_gather_index_mul_permute_select_slice_squeeze_sum_unsqueeze_view_195
+0.0,48736,3,16245.3,16512.0,15200,17024,940.8,triton_per_fused_expand_gather_mul_permute_slice_sum_unsqueeze_view_182
+0.0,48736,12,4061.3,4064.0,3200,5408,625.1,triton_poi_fused_bmm_clone_permute_squeeze_view_162
+0.0,47744,3,15914.7,15520.0,15328,16896,855.3,triton_poi_fused_add_clamp_min_div_expand_linalg_vector_norm_mul_neg_pow_select_sub_12
+0.0,46880,15,3125.3,3072.0,2752,3808,322.7,triton_poi_fused_add_expand_mul_permute_slice_squeeze_sum_view_110
+0.0,46336,30,1544.5,1328.0,1184,3936,618.4,triton_poi_fused__unsafe_view_clone_mul_permute_slice_view_41
+0.0,46112,15,3074.1,2624.0,1280,5056,1182.5,triton_poi_fused_clone_expand_mul_permute_slice_view_102
+0.0,43680,12,3640.0,2608.0,2272,7040,2015.0,triton_poi_fused__unsafe_view_add_clone_index_put_view_7
+0.0,43200,12,3600.0,3632.0,3104,4000,294.4,triton_poi_fused_add_mul_150
+0.0,43136,3,14378.7,14272.0,14176,14688,272.2,triton_poi_fused__to_copy_add_clamp_min_div_expand_linalg_vector_norm_lt_mul_pow_rsub_select_sqrt_stack_sub_sum_view_18
+0.0,41600,15,2773.3,2752.0,2592,3008,145.5,triton_poi_fused_add_expand_mul_permute_slice_squeeze_sum_view_109
+0.0,40896,12,3408.0,3296.0,2944,4416,432.5,triton_poi_fused_bmm_5
+0.0,40800,15,2720.0,2720.0,2496,3232,204.2,triton_poi_fused_expand_mul_105
+0.0,40672,3,13557.3,13792.0,12768,14112,702.1,triton_per_fused_add_expand_mul_neg_permute_sigmoid_sigmoid_backward_silu_backward_slice_squeeze_sum_unsqueeze_view_91
+0.0,40608,3,13536.0,13216.0,13184,14208,582.2,triton_poi_fused_add_expand_mul_permute_slice_squeeze_unsqueeze_view_92
+0.0,40448,12,3370.7,3328.0,3008,4096,366.2,triton_poi_fused_expand_mul_permute_slice_view_49
+0.0,39712,18,2206.2,2128.0,1952,2816,236.8,triton_poi_fused_index_put_select_94
+0.0,39584,3,13194.7,13056.0,12448,14080,824.8,triton_per_fused_mul_permute_slice_sum_view_21
+0.0,39072,12,3256.0,3280.0,2880,3616,247.9,triton_poi_fused_mul_permute_slice_view_67
+0.0,38080,12,3173.3,2496.0,2144,5568,1164.5,triton_poi_fused_expand_mul_slice_view_24
+0.0,37696,6,6282.7,6080.0,4896,8448,1568.3,"std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, float, float, float, float, (bool)0, (bool)1, (bool)0, (bool)0, (int)8, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const float>, cublasGemvTensorStridedBatched<const float>, cublasGemvTensorStridedBatched<float>, float>>(T13)"
+0.0,37376,30,1245.9,1248.0,1120,1504,96.2,triton_poi_fused__unsafe_view_clone_mul_permute_slice_view_40
+0.0,37184,15,2478.9,2272.0,2080,3488,458.5,triton_poi_fused__unsafe_view_clone_expand_mul_permute_slice_view_88
+0.0,37056,3,12352.0,12672.0,11552,12832,697.4,triton_per_fused_expand_gather_mul_permute_slice_sum_unsqueeze_view_179
+0.0,35872,12,2989.3,3104.0,2496,3328,278.1,triton_poi_fused_expand_mul_permute_slice_view_47
+0.0,34560,12,2880.0,2864.0,2784,3008,66.8,triton_poi_fused_expand_mul_permute_slice_sum_view_161
+0.0,34336,15,2289.1,2144.0,1984,3136,328.8,triton_poi_fused__unsafe_view_clone_expand_mul_permute_slice_view_87
+0.0,33824,3,11274.7,11328.0,11072,11424,182.0,triton_per_fused_expand_gather_index_mul_permute_select_slice_sum_unsqueeze_view_174
+0.0,33664,3,11221.3,10880.0,10432,12352,1004.5,triton_poi_fused_expand_gather_mul_permute_select_slice_unsqueeze_view_97
+0.0,32768,6,5461.3,5456.0,5280,5696,146.9,"void at::native::vectorized_elementwise_kernel<(int)2, at::native::BinaryFunctor<double, double, double, at::native::binary_internal::DivFunctor<double>>, std::array<char *, (unsigned long)3>>(int, T2, T3)"
+0.0,32736,12,2728.0,2720.0,2624,2912,84.3,triton_poi_fused_expand_mul_permute_slice_sum_view_162
+0.0,32512,3,10837.3,10784.0,10048,11680,817.3,triton_per_fused_expand_gather_mul_permute_slice_sum_unsqueeze_view_181
+0.0,31104,3,10368.0,10528.0,9344,11232,954.1,triton_per_fused_expand_gather_mul_permute_slice_sum_unsqueeze_view_180
+0.0,30464,3,10154.7,10464.0,9248,10752,798.3,triton_poi_fused_add_index_put_mul_sigmoid_slice_72
+0.0,29888,15,1992.5,1920.0,1632,2432,228.7,triton_poi_fused__unsafe_view_clone_expand_mul_permute_slice_view_86
+0.0,28960,15,1930.7,1920.0,1600,2336,176.8,triton_poi_fused_cat_silu_slice_35
+0.0,28928,12,2410.7,2288.0,2112,3424,361.1,triton_poi_fused_mul_44
+0.0,27488,12,2290.7,2304.0,2112,2656,155.8,triton_poi_fused_copy_slice_84
+0.0,27392,15,1826.1,1728.0,1408,2272,241.7,triton_poi_fused_expand_mul_permute_slice_view_85
+0.0,27360,12,2280.0,2272.0,2016,2592,182.1,triton_poi_fused__unsafe_view_clone_mul_permute_slice_view_99
+0.0,27040,15,1802.7,1792.0,1568,2048,147.5,triton_poi_fused_clone_expand_mul_permute_slice_view_104
+0.0,26496,3,8832.0,8832.0,8384,9280,448.0,triton_poi_fused__unsafe_view_add_clone_permute_view_30
+0.0,25440,3,8480.0,8576.0,7264,9600,1171.0,triton_poi_fused_expand_gather_mul_permute_select_slice_unsqueeze_view_98
+0.0,25216,3,8405.3,8128.0,7616,9472,958.6,triton_poi_fused_slice_backward_206
+0.0,24352,3,8117.3,8064.0,8000,8288,151.2,triton_poi_fused_div_linalg_vector_norm_masked_fill_mul_neg_scalar_tensor_sum_187
+0.0,24192,15,1612.8,1536.0,1376,2112,209.4,triton_poi_fused_clone_expand_mul_permute_slice_view_103
+0.0,23808,3,7936.0,7904.0,7904,8000,55.4,triton_poi_fused__unsafe_view_add_clone_mul_permute_view_89
+0.0,23713,3,7904.3,7904.0,7617,8192,287.5,triton_poi_fused_add_fill_mul_neg_permute_sigmoid_backward_silu_backward_slice_squeeze_sub_96
+0.0,22592,12,1882.7,1824.0,1760,2240,146.2,triton_poi_fused_add_fill_mul_sigmoid_slice_sub_159
+0.0,22560,3,7520.0,7328.0,7200,8032,448.0,triton_poi_fused__unsafe_view_add_clone_mul_permute_squeeze_view_107
+0.0,22368,15,1491.2,1472.0,1344,1696,94.3,triton_poi_fused__unsafe_view_clone_mul_permute_slice_view_42
+0.0,21344,3,7114.7,7104.0,6848,7392,272.2,triton_poi_fused_add_fill_mm_mul_neg_permute_sigmoid_backward_silu_backward_sub_t_view_74
+0.0,21184,15,1412.3,1408.0,1376,1472,20.5,triton_poi_fused_add_mul_117
+0.0,21152,3,7050.7,7072.0,6496,7584,544.3,triton_poi_fused_add_clone_copy_mul_sigmoid_slice_165
+0.0,20896,12,1741.3,1760.0,1536,1856,78.9,triton_poi_fused_clone_mul_permute_slice_view_123
+0.0,20288,24,845.3,800.0,800,1024,69.9,triton_poi_fused_mul_permute_view_4
+0.0,19872,12,1656.0,1648.0,1440,1856,144.5,triton_poi_fused__unsafe_view_clone_permute_slice_view_80
+0.0,19777,3,6592.3,6625.0,6208,6944,369.1,triton_poi_fused_add_clone_copy_slice_97
+0.0,19520,24,813.3,800.0,768,928,49.0,triton_poi_fused_mul_permute_view_6
+0.0,19296,15,1286.4,1280.0,1184,1472,82.2,triton_poi_fused_add_fill_mul_sigmoid_slice_sub_115
+0.0,19168,24,798.7,768.0,736,928,58.5,triton_poi_fused_mul_permute_view_3
+0.0,19136,12,1594.7,1648.0,1312,1760,130.8,triton_poi_fused__unsafe_view_clone_permute_slice_view_74
+0.0,19136,12,1594.7,1520.0,1472,1824,141.0,triton_poi_fused_copy_fill_sigmoid_slice_sub_83
+0.0,18976,3,6325.3,6432.0,5792,6752,488.8,triton_poi_fused_add_index_add_masked_fill_mul_neg_scalar_tensor_where_188
+0.0,18560,15,1237.3,1280.0,928,1376,142.9,triton_poi_fused_mul_permute_slice_view_38
+0.0,18464,24,769.3,752.0,704,928,57.0,triton_poi_fused_mm_t_8
+0.0,18368,18,1020.4,1008.0,960,1184,61.0,triton_poi_fused_add_mul_84
+0.0,18304,12,1525.3,1520.0,1440,1664,65.9,triton_poi_fused__unsafe_view_clone_mul_permute_slice_view_100
+0.0,18112,6,3018.7,3040.0,1856,4096,1147.8,"void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<double, at::native::MeanOps<double, double, double, double>, unsigned int, double, (int)4, (int)4>>(T3)"
+0.0,17984,12,1498.7,1504.0,1472,1536,23.0,triton_poi_fused_bmm_permute_slice_view_102
+0.0,17824,15,1188.3,1120.0,1088,1472,128.5,triton_poi_fused_add_permute_slice_squeeze_118
+0.0,17664,15,1177.6,1152.0,1088,1376,68.6,triton_poi_fused__unsafe_view_clone_mul_permute_slice_view_39
+0.0,17538,3,5846.0,5985.0,5536,6017,268.9,triton_poi_fused__unsafe_view_cat_clone_copy_permute_slice_view_37
+0.0,16672,18,926.2,896.0,864,1056,69.8,triton_poi_fused_mul_12
+0.0,16512,12,1376.0,1328.0,1216,1856,181.5,triton_poi_fused_add_fill_mul_sigmoid_slice_sub_158
+0.0,16001,3,5333.7,5472.0,4864,5665,418.0,triton_poi_fused__unsafe_view_add_clone_mul_permute_view_171
+0.0,15969,12,1330.8,1344.0,1280,1376,28.8,triton_poi_fused_copy_slice_82
+0.0,15616,3,5205.3,5312.0,4832,5472,333.1,triton_poi_fused_expand_scatter_add_unsqueeze_6
+0.0,15360,3,5120.0,5248.0,4608,5504,461.5,triton_poi_fused_expand_mul_slice_view_85
+0.0,14656,12,1221.3,1216.0,1184,1280,30.0,triton_poi_fused_clone_mul_permute_slice_view_121
+0.0,14496,15,966.4,960.0,928,1152,54.4,triton_poi_fused_mul_permute_slice_view_39
+0.0,14304,12,1192.0,1184.0,1152,1312,43.4,triton_poi_fused_clone_mul_permute_slice_view_122
+0.0,14080,12,1173.3,1152.0,1152,1280,39.4,triton_poi_fused__unsafe_view_clone_mul_permute_slice_view_98
+0.0,13824,9,1536.0,1696.0,1088,2016,351.3,"void at::native::vectorized_elementwise_kernel<(int)2, at::native::CUDAFunctor_add<double>, std::array<char *, (unsigned long)3>>(int, T2, T3)"
+0.0,13824,12,1152.0,1088.0,1088,1408,110.0,triton_poi_fused__unsafe_view_clone_permute_slice_view_75
+0.0,13728,15,915.2,896.0,864,1184,75.3,triton_poi_fused_slice_114
+0.0,13344,12,1112.0,1120.0,928,1344,127.4,"void at::native::vectorized_elementwise_kernel<(int)2, at::native::AUnaryFunctor<double, double, double, at::native::binary_internal::MulFunctor<double>>, std::array<char *, (unsigned long)2>>(int, T2, T3)"
+0.0,12512,15,834.1,736.0,512,1376,269.8,"void at::native::vectorized_elementwise_kernel<(int)4, at::native::FillFunctor<float>, std::array<char *, (unsigned long)1>>(int, T2, T3)"
+0.0,12480,15,832.0,832.0,800,928,36.3,triton_poi_fused_slice_112
+0.0,12192,15,812.8,800.0,768,832,20.2,triton_poi_fused_slice_111
+0.0,11776,15,785.1,768.0,736,896,45.0,triton_poi_fused_add_permute_slice_backward_view_90
+0.0,11648,3,3882.7,3808.0,3680,4160,248.6,triton_poi_fused_add_expand_mul_permute_slice_squeeze_sum_view_93
+0.0,11584,6,1930.7,1824.0,1120,3008,880.5,"void at::native::vectorized_elementwise_kernel<(int)2, at::native::neg_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 2)]::operator ()() const::[lambda() (instance 6)]::operator ()() const::[lambda(double) (instance 1)], std::array<char *, (unsigned long)2>>(int, T2, T3)"
+0.0,11521,3,3840.3,3809.0,3680,4032,178.1,triton_poi_fused__unsafe_view_add_clone_mul_permute_view_169
+0.0,11392,6,1898.7,1840.0,1632,2368,283.1,triton_poi_fused_expand_scatter_add_select_unsqueeze_25
+0.0,10816,3,3605.3,3296.0,3264,4256,563.7,triton_poi_fused_expand_scatter_add_unsqueeze_4
+0.0,10688,12,890.7,864.0,832,1024,57.6,triton_poi_fused_add_permute_slice_backward_view_101
+0.0,10497,3,3499.0,3552.0,3264,3681,213.5,triton_poi_fused_clone_permute_view_90
+0.0,10464,12,872.0,832.0,800,1056,80.9,triton_poi_fused__unsafe_view_clone_permute_11
+0.0,10368,3,3456.0,3488.0,3360,3520,84.7,triton_poi_fused_add_mul_neg_sum_186
+0.0,10305,3,3435.0,3392.0,3168,3745,290.9,triton_poi_fused_expand_index_mul_permute_select_view_27
+0.0,10208,12,850.7,800.0,768,1056,96.9,triton_poi_fused__unsafe_view_clone_permute_5
+0.0,10208,15,680.5,640.0,608,864,98.6,"void at::native::vectorized_elementwise_kernel<(int)2, at::native::FillFunctor<double>, std::array<char *, (unsigned long)1>>(int, T2, T3)"
+0.0,10144,12,845.3,800.0,768,992,98.8,triton_poi_fused__unsafe_view_clone_permute_2
+0.0,10048,3,3349.3,3328.0,3296,3424,66.6,triton_poi_fused_add_clone_mul_permute_sigmoid_slice_view_168
+0.0,9920,12,826.7,800.0,768,960,77.0,triton_poi_fused__unsafe_view_clone_permute_7
+0.0,9888,12,824.0,800.0,768,928,64.2,triton_poi_fused__unsafe_view_clone_permute_9
+0.0,9600,3,3200.0,3200.0,3040,3360,160.0,triton_poi_fused_add_expand_mul_permute_slice_squeeze_sum_view_95
+0.0,9344,3,3114.7,3264.0,2816,3264,258.7,triton_poi_fused_add_clone_permute_view_75
+0.0,9184,3,3061.3,2912.0,2880,3392,286.8,triton_poi_fused_index_select_select_17
+0.0,8992,3,2997.3,3008.0,2944,3040,48.9,triton_poi_fused_add_fill_mm_mul_permute_sigmoid_silu_sub_t_view_91
+0.0,8704,3,2901.3,2944.0,2784,2976,102.9,triton_poi_fused_add_expand_mul_permute_slice_squeeze_sum_view_94
+0.0,8480,3,2826.7,2816.0,2816,2848,18.5,triton_poi_fused_add_mul_83
+0.0,8128,3,2709.3,2720.0,2592,2816,112.4,triton_poi_fused_slice_backward_205
+0.0,8128,6,1354.7,1152.0,1056,1856,380.1,triton_poi_fused_expand_scatter_add_select_unsqueeze_14
+0.0,8096,3,2698.7,2880.0,2304,2912,342.2,triton_poi_fused__to_copy_addcmul_scatter_add_unsqueeze_zeros_92
+0.0,7744,3,2581.3,2560.0,2528,2656,66.6,triton_poi_fused_embedding_expand_mul_permute_view_26
+0.0,7744,6,1290.7,1264.0,1248,1376,56.0,"void at::native::vectorized_elementwise_kernel<(int)2, void at::native::<unnamed>::pow_tensor_scalar_kernel_impl<double, double>(at::TensorIteratorBase &, T2)::[lambda(double) (instance 1)], std::array<char *, (unsigned long)2>>(int, T2, T3)"
+0.0,7424,3,2474.7,2400.0,2368,2656,157.9,triton_poi_fused__to_copy_19
+0.0,7392,6,1232.0,1216.0,1024,1472,198.0,"void at::native::vectorized_elementwise_kernel<(int)2, at::native::BinaryFunctor<double, double, double, at::native::binary_internal::MulFunctor<double>>, std::array<char *, (unsigned long)3>>(int, T2, T3)"
+0.0,7104,3,2368.0,2624.0,1792,2688,499.9,triton_poi_fused_index_select_select_sub_16
+0.0,6752,3,2250.7,2272.0,2208,2272,37.0,triton_poi_fused_add_clone_mul_permute_sigmoid_slice_view_166
+0.0,5792,3,1930.7,1888.0,1888,2016,73.9,triton_poi_fused_add_clone_mul_permute_sigmoid_slice_view_167
+0.0,5536,3,1845.3,1920.0,1664,1952,157.9,triton_poi_fused_expand_mul_slice_view_86
+0.0,5536,3,1845.3,1920.0,1632,1984,187.5,triton_poi_fused_mul_permute_slice_view_16
+0.0,5504,3,1834.7,1856.0,1792,1856,37.0,triton_poi_fused_new_zeros_204
+0.0,5504,6,917.3,912.0,704,1152,211.9,"void at::native::elementwise_kernel<(int)128, (int)2, void at::native::gpu_kernel_impl_nocast<at::native::BUnaryFunctor<double, double, double, at::native::binary_internal::MulFunctor<double>>>(at::TensorIteratorBase &, const T1 &)::[lambda(int) (instance 1)]>(int, T3)"
+0.0,5152,3,1717.3,1760.0,1536,1856,164.2,triton_poi_fused__unsafe_view_clone_mul_permute_slice_view_33
+0.0,5152,3,1717.3,1728.0,1664,1760,48.9,triton_poi_fused_add_fill_mul_sigmoid_slice_sub_116
+0.0,5024,3,1674.7,1632.0,1568,1824,133.2,triton_poi_fused__unsafe_view_clone_permute_slice_view_170
+0.0,4896,3,1632.0,1600.0,1600,1696,55.4,triton_poi_fused__unsafe_view_cat_clone_copy_fill_permute_sigmoid_slice_sub_view_36
+0.0,4896,3,1632.0,1632.0,1600,1664,32.0,"void gemv2T_kernel_val<int, int, float, float, float, float, (int)128, (int)16, (int)2, (int)2, (bool)0, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const float>, cublasGemvTensorStridedBatched<const float>, cublasGemvTensorStridedBatched<float>, float>>(T13, T6, T6)"
+0.0,4736,3,1578.7,1568.0,1568,1600,18.5,triton_poi_fused_mul_permute_slice_view_14
+0.0,4640,3,1546.7,1536.0,1536,1568,18.5,triton_poi_fused__to_copy_add_gather_mul_0
+0.0,4608,3,1536.0,1600.0,1280,1728,230.8,triton_poi_fused_scatter_add_unsqueeze_zeros_1
+0.0,4480,3,1493.3,1440.0,1440,1600,92.4,triton_poi_fused__unsafe_view_clone_mul_permute_slice_view_29
+0.0,4416,3,1472.0,1504.0,1408,1504,55.4,triton_poi_fused_mul_permute_slice_view_15
+0.0,4416,9,490.7,448.0,448,608,66.0,triton_poi_fused_index_add_neg_select_93
+0.0,4352,3,1450.7,1440.0,1440,1472,18.5,triton_poi_fused_stack_15
+0.0,4256,3,1418.7,1440.0,1344,1472,66.6,triton_poi_fused_slice_backward_203
+0.0,3872,3,1290.7,1248.0,1248,1376,73.9,triton_poi_fused__unsafe_view_clone_mul_permute_slice_view_32
+0.0,3872,3,1290.7,1312.0,1248,1312,37.0,triton_poi_fused_add_fill_mul_sigmoid_slice_sub_113
+0.0,3776,3,1258.7,1280.0,1216,1280,37.0,triton_poi_fused__unsafe_view_clone_permute_slice_view_169
+0.0,3744,3,1248.0,1248.0,1216,1280,32.0,triton_poi_fused__unsafe_view_clone_mul_permute_slice_view_28
+0.0,3744,3,1248.0,1184.0,1184,1376,110.9,triton_poi_fused_expand_mul_permute_view_176
+0.0,3680,3,1226.7,1152.0,1152,1376,129.3,triton_poi_fused__unsafe_view_cat_clone_copy_permute_slice_view_34
+0.0,3680,3,1226.7,1248.0,1152,1280,66.6,triton_poi_fused_mul_28
+0.0,3680,3,1226.7,1216.0,1120,1344,112.4,triton_poi_fused_select_backward_200
+0.0,3648,3,1216.0,1120.0,1088,1440,194.6,triton_poi_fused_mul_20
+0.0,3585,3,1195.0,1153.0,1152,1280,73.6,triton_poi_fused__unsafe_view_clone_permute_slice_view_168
+0.0,3584,3,1194.7,1184.0,1152,1248,48.9,triton_poi_fused_expand_mul_slice_view_87
+0.0,3552,3,1184.0,1216.0,1056,1280,115.4,triton_poi_fused_index_add_neg_2
+0.0,3520,3,1173.3,1184.0,1152,1184,18.5,triton_poi_fused_add_mul_175
+0.0,3520,3,1173.3,992.0,960,1568,342.2,triton_poi_fused_zeros_like_202
+0.0,3424,3,1141.3,1088.0,1056,1280,121.2,triton_poi_fused__unsafe_view_clone_mul_permute_slice_view_31
+0.0,3392,3,1130.7,1088.0,992,1312,164.2,triton_poi_fused__unsafe_view_clone_mul_permute_slice_view_27
+0.0,3296,3,1098.7,1088.0,1056,1152,48.9,triton_poi_fused_add_permute_slice_backward_view_178
+0.0,3232,3,1077.3,1088.0,992,1152,80.5,triton_poi_fused__to_copy_expand_gather_mul_ones_like_unsqueeze_13
+0.0,3136,3,1045.3,1056.0,1024,1056,18.5,triton_poi_fused_mul_view_89
+0.0,3008,3,1002.7,992.0,960,1056,48.9,triton_poi_fused_add_mul_76
+0.0,3008,3,1002.7,960.0,832,1216,195.5,triton_poi_fused_mul_permute_slice_view_30
+0.0,2848,3,949.3,960.0,928,960,18.5,triton_poi_fused_mul_10
+0.0,2720,3,906.7,864.0,864,992,73.9,triton_poi_fused_add_189
+0.0,2656,3,885.3,864.0,832,960,66.6,triton_poi_fused_zeros_like_201
+0.0,2528,3,842.7,832.0,832,864,18.5,triton_poi_fused_add_198
+0.0,2528,3,842.7,800.0,800,928,73.9,triton_poi_fused_mul_permute_slice_view_26
+0.0,2400,3,800.0,800.0,800,800,0.0,triton_poi_fused_new_zeros_199
+0.0,1920,3,640.0,608.0,608,704,55.4,triton_poi_fused_new_zeros_3
+0.0,1760,3,586.7,576.0,576,608,18.5,triton_poi_fused_add_embedding_dense_backward_mul_permute_view_1

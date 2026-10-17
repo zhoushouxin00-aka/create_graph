@@ -1,0 +1,11 @@
+cons_1024 exit=1
+2f2b_1024 exit=1
+generated_1024 exit=1
+explicit_1024 exit=1
+2f2b_1536 exit=1
+generated_1536 exit=1
+explicit_1536 exit=1
+generated_ckpt_1024 exit=1
+ddp2_generated exit=1
+ddp2_cons exit=1
+explicit_1536 exit=1

@@ -1,0 +1,18 @@
+host=train-1697532127623260928-cwakx1v6wmbk-master-0 start=2026-10-18 03:35:09 lanes=allscaip_explicit allscaip_2f2b pet nequip uma+allscaip_sizes allscaip_explicit_large e2e
+0, NVIDIA RTX PRO 5000 72GB Blackwell, 0 MiB, 100 %
+1, NVIDIA RTX PRO 5000 72GB Blackwell, 0 MiB, 100 %
+2, NVIDIA RTX PRO 5000 72GB Blackwell, 0 MiB, 100 %
+3, NVIDIA RTX PRO 5000 72GB Blackwell, 0 MiB, 100 %
+4, NVIDIA RTX PRO 5000 72GB Blackwell, 0 MiB, 100 %
+5, NVIDIA RTX PRO 5000 72GB Blackwell, 0 MiB, 100 %
+6, NVIDIA RTX PRO 5000 72GB Blackwell, 0 MiB, 100 %
+7, NVIDIA RTX PRO 5000 72GB Blackwell, 0 MiB, 100 %
+fatal: detected dubious ownership in repository at '/home/tione/notebook/home/zhoushouxin/mlip/fairchem-create_graph'
+To add an exception for this directory, call:
+
+	git config --global --add safe.directory /home/tione/notebook/home/zhoushouxin/mlip/fairchem-create_graph
+fatal: detected dubious ownership in repository at '/home/tione/notebook/home/zhoushouxin/mlip/fairchem-explicit'
+To add an exception for this directory, call:
+
+	git config --global --add safe.directory /home/tione/notebook/home/zhoushouxin/mlip/fairchem-explicit
+done 2026-10-18 04:20:56

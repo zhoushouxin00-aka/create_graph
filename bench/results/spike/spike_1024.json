@@ -1,0 +1,114 @@
+{
+ "atoms": 1024,
+ "budget": 0.5,
+ "tf32": true,
+ "check": {
+  "explicit_compiled": {
+   "energy": 1.199063177637072e-07,
+   "forces": 7.140970410546288e-07,
+   "loss": 1.0866729382996709e-07,
+   "param_grads": 2.061316592971707e-07,
+   "worst_param_tensor": 5.510691607923945e-06
+  },
+  "explicit_budget": {
+   "energy": 2.2980387370807875e-07,
+   "forces": 6.922123816366366e-07,
+   "loss": 0.0,
+   "param_grads": 2.0243392384600156e-07,
+   "worst_param_tensor": 5.457414317788789e-06
+  },
+  "explicit_ckpt": {
+   "energy": 1.536539713242746e-07,
+   "forces": 7.401631592074409e-07,
+   "loss": 0.0,
+   "param_grads": 3.6549667470353597e-07,
+   "worst_param_tensor": 5.269227585813496e-06
+  },
+  "gen_compiled": {
+   "energy": 2.1067125999252312e-07,
+   "forces": 6.887105428177165e-07,
+   "loss": 0.0,
+   "param_grads": 2.0271419032269478e-07,
+   "worst_param_tensor": 5.269227585813496e-06
+  },
+  "gen_budget": {
+   "energy": 2.1331895538878598e-07,
+   "forces": 6.882580692035845e-07,
+   "loss": 1.0866729382996709e-07,
+   "param_grads": 2.018543909798609e-07,
+   "worst_param_tensor": 4.0409918256045785e-06
+  },
+  "gen_ckpt": {
+   "energy": 1.879015343320134e-07,
+   "forces": 7.197743343567709e-07,
+   "loss": 1.0866729382996709e-07,
+   "param_grads": 3.628031493008166e-07,
+   "worst_param_tensor": 4.424314738571411e-06
+  }
+ },
+ "timing": [
+  {
+   "mode": "cg_eager",
+   "status": "ok",
+   "ms_per_step": 966.8866447173059,
+   "peak_gib": 43.7084641456604,
+   "mean_atoms": 1023.8,
+   "first_step_s": 0.9879870139993727,
+   "graphs_compiled": 0
+  },
+  {
+   "mode": "explicit_compiled",
+   "status": "ok",
+   "ms_per_step": 669.814377091825,
+   "peak_gib": 52.75798273086548,
+   "mean_atoms": 1023.8,
+   "first_step_s": 171.55625827098265,
+   "graphs_compiled": 1
+  },
+  {
+   "mode": "explicit_budget",
+   "status": "ok",
+   "ms_per_step": 684.3918691389263,
+   "peak_gib": 33.37205457687378,
+   "mean_atoms": 1023.8,
+   "first_step_s": 174.35995748778805,
+   "graphs_compiled": 1
+  },
+  {
+   "mode": "explicit_ckpt",
+   "status": "ok",
+   "ms_per_step": 1075.0529329292476,
+   "peak_gib": 7.394633769989014,
+   "mean_atoms": 1023.8,
+   "first_step_s": 30.53397104004398,
+   "graphs_compiled": 2
+  },
+  {
+   "mode": "gen_compiled",
+   "status": "ok",
+   "ms_per_step": 660.4005275294185,
+   "peak_gib": 43.3833703994751,
+   "mean_atoms": 1023.8,
+   "first_step_s": 169.23232321580872,
+   "graphs_compiled": 1
+  },
+  {
+   "mode": "gen_budget",
+   "status": "ok",
+   "ms_per_step": 703.5747610032558,
+   "peak_gib": 37.26136922836304,
+   "mean_atoms": 1023.8,
+   "first_step_s": 193.53015672508627,
+   "graphs_compiled": 1
+  },
+  {
+   "mode": "gen_ckpt",
+   "status": "ok",
+   "ms_per_step": 1056.7218938842416,
+   "peak_gib": 6.826561450958252,
+   "mean_atoms": 1023.8,
+   "first_step_s": 47.436190616805106,
+   "graphs_compiled": 4
+  }
+ ]
+}

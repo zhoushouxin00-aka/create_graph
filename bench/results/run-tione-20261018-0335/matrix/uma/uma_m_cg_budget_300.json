@@ -1,0 +1,19 @@
+{
+ "model": "uma",
+ "size": "m",
+ "method": "cg_budget",
+ "atoms": 300,
+ "budget": 0.5,
+ "tf32": true,
+ "torch": "2.13.0+cu130",
+ "gpu": "NVIDIA RTX PRO 5000 72GB Blackwell",
+ "cuda_visible_devices": "4",
+ "gpu_neighbors_before": "",
+ "ms_per_step": 244.40143660758622,
+ "peak_gib": 24.881717681884766,
+ "mean_atoms": 299.2,
+ "atoms_per_s": 1224.2153898645,
+ "first_step_s": 238.60572855599457,
+ "status": "ok",
+ "gpu_neighbors_after": ""
+}

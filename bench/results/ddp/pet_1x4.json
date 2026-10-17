@@ -1,0 +1,62 @@
+{
+ "summary": {
+  "model": "pet",
+  "world": 4,
+  "nodes": 1,
+  "ok": true
+ },
+ "steps": [
+  {
+   "step": 0,
+   "world": 4,
+   "atoms_rank0": 467,
+   "ranks_bitwise_identical": true,
+   "params_rel_err": 1.0507708769612121e-07,
+   "params_worst_tensor": 4.563305798359125e-07,
+   "ms_rank0": {
+    "create_graph": 53209.42872995511,
+    "eager": 47.340571880340576
+   },
+   "grad_norm_rel": 6.598031305811097e-08
+  },
+  {
+   "step": 1,
+   "world": 4,
+   "atoms_rank0": 339,
+   "ranks_bitwise_identical": true,
+   "params_rel_err": 9.021949641083162e-08,
+   "params_worst_tensor": 5.080123427125538e-07,
+   "ms_rank0": {
+    "create_graph": 47412.11009537801,
+    "eager": 46.70159798115492
+   },
+   "grad_norm_rel": 0.0
+  },
+  {
+   "step": 2,
+   "world": 4,
+   "atoms_rank0": 430,
+   "ranks_bitwise_identical": true,
+   "params_rel_err": 7.765888423911667e-08,
+   "params_worst_tensor": 5.281243275187118e-07,
+   "ms_rank0": {
+    "create_graph": 31.884558033198118,
+    "eager": 39.786449167877436
+   },
+   "grad_norm_rel": 0.0
+  },
+  {
+   "step": 3,
+   "world": 4,
+   "atoms_rank0": 429,
+   "ranks_bitwise_identical": true,
+   "params_rel_err": 8.383481868307836e-08,
+   "params_worst_tensor": 4.828463632446188e-07,
+   "ms_rank0": {
+    "create_graph": 34.27361836656928,
+    "eager": 42.6492840051651
+   },
+   "grad_norm_rel": 0.0
+  }
+ ]
+}

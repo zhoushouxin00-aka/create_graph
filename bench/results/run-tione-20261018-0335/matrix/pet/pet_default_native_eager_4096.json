@@ -1,0 +1,23 @@
+{
+ "model": "pet",
+ "size": "default",
+ "method": "native_eager",
+ "atoms": 4096,
+ "budget": 0.5,
+ "tf32": true,
+ "torch": "2.13.0+cu130",
+ "gpu": "NVIDIA RTX PRO 5000 72GB Blackwell",
+ "cuda_visible_devices": "2",
+ "gpu_neighbors_before": "",
+ "ms_per_step": 518.4369007998612,
+ "peak_gib": 33.75218915939331,
+ "mean_atoms": 4015.4,
+ "atoms_per_s": 7745.2048529047825,
+ "first_step_s": 0.9252375800278969,
+ "max_atoms": 8540,
+ "mean_atoms_at_max": 8491.5,
+ "atoms_per_s_at_max": 7015.301586230674,
+ "peak_gib_at_max": 63.096890449523926,
+ "status": "ok",
+ "gpu_neighbors_after": ""
+}
