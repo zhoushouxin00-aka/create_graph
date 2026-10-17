@@ -1,0 +1,23 @@
+{
+ "model": "nequip",
+ "size": "L",
+ "method": "nequip_eager",
+ "atoms": 2048,
+ "budget": 0.5,
+ "tf32": true,
+ "torch": "2.13.0+cu130",
+ "gpu": "NVIDIA RTX PRO 5000 72GB Blackwell",
+ "cuda_visible_devices": "3",
+ "gpu_neighbors_before": "",
+ "ms_per_step": 946.2566575035453,
+ "peak_gib": 20.907742977142334,
+ "mean_atoms": 1967.0,
+ "atoms_per_s": 2078.717211025414,
+ "first_step_s": 1.4808078650385141,
+ "max_atoms": 7649,
+ "mean_atoms_at_max": 7597.0,
+ "atoms_per_s_at_max": 2004.5907576929098,
+ "peak_gib_at_max": 68.27985620498657,
+ "status": "ok",
+ "gpu_neighbors_after": ""
+}

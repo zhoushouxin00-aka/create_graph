@@ -1,0 +1,14 @@
+allscaip_explicit gpus=0 cores=0-15,128-143 start=2026-10-18 03:35:10
+nequip gpus=3 cores=48-63,176-191 start=2026-10-18 03:35:10
+pet gpus=2 cores=32-47,160-175 start=2026-10-18 03:35:10
+allscaip_2f2b gpus=1 cores=16-31,144-159 start=2026-10-18 03:35:10
+e2e gpus=7,6 cores=112-127,240-255,96-111,224-239 start=2026-10-18 03:35:10
+uma+allscaip_sizes gpus=4 cores=64-79,192-207 start=2026-10-18 03:35:10
+allscaip_explicit_large gpus=5 cores=80-95,208-223 start=2026-10-18 03:35:10
+pet exit=0 end=2026-10-18 03:49:49
+allscaip_explicit_large exit=0 end=2026-10-18 03:51:58
+allscaip_2f2b exit=0 end=2026-10-18 04:01:47
+e2e exit=0 end=2026-10-18 04:03:19
+allscaip_explicit exit=0 end=2026-10-18 04:12:38
+uma+allscaip_sizes exit=0 end=2026-10-18 04:19:14
+nequip exit=0 end=2026-10-18 04:20:56
