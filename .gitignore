@@ -5,18 +5,5 @@
 .ruff_cache/
 __pycache__/
 data/
-bench/results/**/*.pt
-bench/results/**/*.nsys-rep
-bench/results/**/*.sqlite
-bench/results/**/*.log
-bench/results/**/checksums/
-bench/results/**/memory.csv
-# superseded: smoke checks, the first (interrupted) local run, the local
-# matrix (by run-tione-20261018-0335) and UMA reruns before the block-scalar fix
-bench/results/smoke_runner/
-bench/results/tione-local-20261018-0142/matrix/
-bench/results/tione-local-20261018-0142/e2e/
-bench/results/run-local-20261018-0149/matrix/
-bench/results/run-local-20261018-0149/summary.md
-bench/results/run-tione-uma-20261018-0433/
-bench/results/run-tione-uma2-20261018-0456/
+bench/
+uv.lock

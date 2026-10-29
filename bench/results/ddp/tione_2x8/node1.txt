@@ -1,9 +1,0 @@
-node 1/2 gpus=8 master=train-1697432715291647872-cw9logincgw0-master-0:23456 host=train-1697432715291647872-cw9logincgw0-worker-0
-0, NVIDIA RTX PRO 5000 72GB Blackwell, 0 MiB
-1, NVIDIA RTX PRO 5000 72GB Blackwell, 0 MiB
-2, NVIDIA RTX PRO 5000 72GB Blackwell, 0 MiB
-3, NVIDIA RTX PRO 5000 72GB Blackwell, 0 MiB
-4, NVIDIA RTX PRO 5000 72GB Blackwell, 0 MiB
-5, NVIDIA RTX PRO 5000 72GB Blackwell, 0 MiB
-6, NVIDIA RTX PRO 5000 72GB Blackwell, 0 MiB
-7, NVIDIA RTX PRO 5000 72GB Blackwell, 0 MiB

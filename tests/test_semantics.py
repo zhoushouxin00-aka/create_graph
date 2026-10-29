@@ -1,8 +1,7 @@
 """
 Mechanism tests on small functions (CPU, float64): every case is compared with
 eager create_graph (``exact=True``): output, input gradients, a loss coupling
-both, and the parameter gradients of that loss. These are not model coverage
-(see test_models_*.py); they pin down the semantics: eager code before the
+both, and the parameter gradients of that loss. They pin down the semantics: eager code before the
 region, inputs of every kind, autograd semantics inside the region, outputs,
 evaluation mode, the contract errors and per-block checkpointing.
 """
