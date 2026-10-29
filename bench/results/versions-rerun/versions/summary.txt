@@ -1,4 +1,0 @@
-torch 2.10.0 exit=0 47 passed, 16 skipped, 7 deselected, 1 warning in 123.23s (0:02:03)
-torch 2.11.0 exit=0 63 passed, 7 deselected, 22 warnings in 977.59s (0:16:17)
-torch 2.12.1 exit=0 63 passed, 7 deselected in 901.49s (0:15:01)
-torch 2.13.0 exit=0 63 passed, 7 deselected in 791.34s (0:13:11)

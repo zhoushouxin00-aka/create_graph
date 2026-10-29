@@ -4,19 +4,12 @@ version = "0.1.0"
 description = "Generate dE/dx into the forward graph for conservative-force MLIP training"
 readme = "README.md"
 requires-python = ">=3.10"
+license = { file = "LICENSE" }
 # The compiled path needs Dynamo to trace torch.autograd.grad (torch >= 2.11).
 # Installed with --no-deps on an older torch, regions fall back to eager
 # create_graph (exact, uncompiled) with a warning.
 dependencies = [
     "torch>=2.11",
-]
-
-[project.optional-dependencies]
-# cg_bench (real-model adapters, data, runner): repository only, not in the wheel.
-bench = [
-    "ase",
-    "metatrain==2026.4.1",
-    "nequip==0.19.1",
 ]
 
 [dependency-groups]
@@ -32,25 +25,12 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/create_graph"]
 
-# Tencent Cloud internal mirror: fastest index on this host. Its torch 2.13.0
-# wheel is the CUDA 13.0 build (same nvidia-* versions as fairchem's venv).
-[[tool.uv.index]]
-name = "tencent"
-url = "http://mirrors.tencentyun.com/pypi/simple"
-default = true
-
-[tool.uv]
-allow-insecure-host = ["mirrors.tencentyun.com"]
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = [".", "src"]
 markers = [
     "gpu: needs CUDA",
     "slow: compiles with Inductor or runs large models",
-    "pet: needs metatrain",
-    "nequip: needs nequip",
-    "fairchem: needs fairchem-core importable",
     "ddp: spawns processes",
     "compiled: asserts compiled-region behavior (skipped on the eager fallback, torch < 2.11)",
 ]
