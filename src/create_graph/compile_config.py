@@ -42,8 +42,8 @@ class CompileConfig:
             linear layer's channels, stays static.
         memory_budget: AOTAutograd activation memory budget in (0, 1] for this
             region's graphs. None on the joint forward + VJP graph uses
-            ``JOINT_ACTIVATION_BUDGET`` (half the fully saved tape). None on a
-            checkpointed region keeps torch's default. 1.0 saves the whole tape.
+            ``JOINT_ACTIVATION_BUDGET``. None on a checkpointed region keeps
+            torch's default. 1.0 saves the whole tape.
         checkpoint: regex matched (``re.fullmatch``) against the module paths
             of the nn.Modules the region receives (its ``self`` and module
             arguments). Matching submodules become checkpointed blocks: compiled
@@ -77,11 +77,14 @@ class CompileConfig:
 DEFAULT_CONFIG = CompileConfig()
 
 # The joint graph inlines dE/dx into the forward. At budget 1.0 the partitioner
-# saves every intermediate of that VJP. Those ops are also marked
-# "materialized backward", which bans them from recomputation, so the tape
-# stays about 70 GiB on AllScAIP. 0.5 is the saved-set target; the joint
-# compile also allows those materialized values to be recomputed.
+# saves every intermediate of that VJP, about 70 GiB on AllScAIP. Budgets below
+# 1 did not shrink it: materialized-backward bans and a min-cut that is already
+# "smaller than the inputs" both skip the knapsack. The joint compile therefore
+# asks for this budget and then, if the saved set is still above
+# ``_JOINT_SAVED_CAP_BYTES``, keeps matmuls and custom kernels and recomputes
+# only fusible ops. Inputs alone are the last resort.
 JOINT_ACTIVATION_BUDGET = 0.3
+_JOINT_SAVED_CAP_BYTES = 24 * 1024**3
 
 
 # ---------------------------------------------------------------------------
@@ -255,6 +258,111 @@ def symbolic_safe_ops():
 
 
 _JOINT_COMPILE_LOGGED = False
+_PARTITION_INSTALLED = False
+
+
+def _node_nbytes(part, node) -> int:
+    try:
+        return int(part._size_of(node))
+    except Exception:
+        return 0
+
+
+def _saved_gib(part, nodes) -> float:
+    return sum(_node_nbytes(part, node) for node in nodes) / 2**30
+
+
+def _saved_top(part, nodes, k: int = 6) -> str:
+    ranked = sorted(nodes, key=lambda node: _node_nbytes(part, node), reverse=True)[:k]
+    bits = []
+    for node in ranked:
+        val = node.meta.get("val")
+        shape = getattr(val, "shape", None)
+        dtype = getattr(val, "dtype", None)
+        target = getattr(node.target, "__name__", node.target)
+        bits.append(f"{target} {shape} {dtype} {_node_nbytes(part, node) / 2**30:.2f}GiB")
+    return "; ".join(bits)
+
+
+def _aggressive_saved(part, joint_graph, node_info):
+    """Recompute fusible ops. Matmuls stay saved, and so do custom kernels."""
+    options = part.MinCutOptions(
+        ban_if_used_far_apart=False,
+        ban_if_long_fusible_chains=False,
+        ban_if_materialized_backward=False,
+        ban_if_not_in_allowlist=False,
+        ban_if_reduction=True,
+    )
+    functorch = torch._functorch.config
+    previous = getattr(functorch, "is_non_builtin_to_include", None)
+    if previous is not None:
+        functorch.is_non_builtin_to_include = True
+    try:
+        saved, _banned = part.solve_min_cut(joint_graph, node_info, options)
+    finally:
+        if previous is not None:
+            functorch.is_non_builtin_to_include = previous
+    return saved
+
+
+def _install_joint_saved_cap() -> None:
+    """Keep the joint graph compiled, and stop it saving a 60 GiB tape.
+
+    Installed once, including for later regions in the process. A budget of 1
+    is left to the stock partitioner. A lower budget that still estimates above
+    the cap recomputes fusible ops first and, if that estimate is still over
+    the cap, saves only the region inputs.
+    """
+    global _PARTITION_INSTALLED
+    if _PARTITION_INSTALLED:
+        return
+    import torch._functorch.partitioners as part
+
+    original = part.choose_saved_values_set
+    if getattr(original, "_cg_cap", False):
+        _PARTITION_INSTALLED = True
+        return
+
+    def choose(joint_graph, node_info, memory_budget=1):
+        saved = original(joint_graph, node_info, memory_budget)
+        stock_gib = _saved_gib(part, saved)
+        print(
+            f"create_graph partition request={memory_budget} "
+            f"saved={stock_gib:.2f}GiB inputs={_saved_gib(part, node_info.inputs):.2f}GiB "
+            f"n={len(saved)} top=[{_saved_top(part, saved)}]",
+            flush=True,
+        )
+        if memory_budget >= 1 or stock_gib * 2**30 <= _JOINT_SAVED_CAP_BYTES:
+            return saved
+        try:
+            aggressive = _aggressive_saved(part, joint_graph, node_info)
+        except Exception as exc:
+            aggressive = None
+            print(
+                f"create_graph partition aggressive failed: {type(exc).__name__}: {exc}",
+                flush=True,
+            )
+        if aggressive is not None:
+            aggressive_gib = _saved_gib(part, aggressive)
+            print(
+                f"create_graph partition aggressive saved={aggressive_gib:.2f}GiB "
+                f"n={len(aggressive)} top=[{_saved_top(part, aggressive)}]",
+                flush=True,
+            )
+            if aggressive_gib * 2**30 <= _JOINT_SAVED_CAP_BYTES:
+                print("create_graph partition choice=aggressive", flush=True)
+                return aggressive
+        inputs_only = original(joint_graph, node_info, 0)
+        print(
+            f"create_graph partition choice=inputs "
+            f"saved={_saved_gib(part, inputs_only):.2f}GiB",
+            flush=True,
+        )
+        return inputs_only
+
+    choose._cg_cap = True
+    part.choose_saved_values_set = choose
+    _PARTITION_INSTALLED = True
 
 
 @contextlib.contextmanager
@@ -282,6 +390,8 @@ def compile_context(config: CompileConfig, recompile_limit: int | None = None, *
         patches[name] = max(recompile_limit, getattr(dynamo, name))
     with contextlib.ExitStack() as stack:
         stack.enter_context(dynamo.patch(**patches))
+        if joint:
+            _install_joint_saved_cap()
         budget = config.memory_budget
         if budget is None and joint:
             budget = JOINT_ACTIVATION_BUDGET
