@@ -10,6 +10,7 @@ from __future__ import annotations
 import contextlib
 import dataclasses
 import functools
+import os
 import warnings
 from collections.abc import Callable
 from typing import Any
@@ -418,6 +419,121 @@ def compile_context(config: CompileConfig, recompile_limit: int | None = None, *
         stack.enter_context(symbolic_safe_ops())
         stack.enter_context(_guard_comments_without_frames())
         yield
+
+
+def observe_step_memory(step: int, rank: str) -> None:
+    """Record one steady step's allocations when ``CREATE_GRAPH_MEMORY_TRACE=1``.
+
+    The joint graph's saved activations are about 10 GiB while the GPU peak is
+    about 65 GiB, so the gap is tensors live inside the step. Rank 0 records
+    step 100 and prints, at the start of step 101, which call sites held the
+    most memory at the peak.
+    """
+    if os.environ.get("CREATE_GRAPH_MEMORY_TRACE") != "1" or rank != "0":
+        return
+    if not torch.cuda.is_available():
+        return
+    if step == 100:
+        _memory_history(True)
+        print("create_graph memory_trace recording step 100", flush=True)
+    elif step == 101:
+        _print_memory_trace()
+        _memory_history(False)
+
+
+def _memory_history(enabled: bool) -> None:
+    fn = torch.cuda.memory._record_memory_history
+    if enabled:
+        fn(enabled="all", context="all", stacks="python", max_entries=300000, clear_history=True)
+    else:
+        fn(enabled=None)
+
+
+def _trace_site(frames: list) -> tuple[str, str]:
+    chosen = None
+    for frame in reversed(frames or []):
+        filename = str(frame.get("filename", ""))
+        if "torch/cuda" in filename or "cuda/memory" in filename:
+            continue
+        chosen = frame
+        if "site-packages/torch/" not in filename and "dist-packages/torch/" not in filename:
+            break
+    if chosen is None:
+        return "noframe", ""
+    filename = str(chosen.get("filename", ""))
+    line_no = int(chosen.get("line", 0) or 0)
+    name = str(chosen.get("name", ""))
+    source = ""
+    try:
+        with open(filename) as handle:
+            for number, text in enumerate(handle, 1):
+                if number == line_no:
+                    source = text.strip()[:180]
+                    break
+    except OSError:
+        source = ""
+    return f"{filename}:{line_no} {name}", source
+
+
+def _print_memory_trace() -> None:
+    try:
+        snapshot = torch.cuda.memory._snapshot()
+    except Exception as exc:
+        print(f"create_graph memory_trace snapshot failed: {type(exc).__name__}: {exc}", flush=True)
+        return
+    traces = snapshot.get("device_traces") or []
+    if isinstance(traces, dict):
+        traces = list(traces.values())
+    events = []
+    for trace in traces:
+        if isinstance(trace, list):
+            events.extend(trace)
+    sizes: dict[int, int] = {}
+    total = 0
+    peak = 0
+    peak_at = -1
+    for index, event in enumerate(events):
+        action = event.get("action")
+        addr = event.get("addr")
+        if addr is None:
+            continue
+        if action in ("alloc", "alloc_requested"):
+            size = int(event.get("size", 0))
+            total += size - sizes.get(addr, 0)
+            sizes[addr] = size
+            if total >= peak:
+                peak = total
+                peak_at = index
+        elif action in ("free", "free_completed", "free_requested"):
+            total -= sizes.pop(addr, 0)
+    live: dict[int, tuple[int, list]] = {}
+    for index, event in enumerate(events):
+        if index > peak_at:
+            break
+        action = event.get("action")
+        addr = event.get("addr")
+        if addr is None:
+            continue
+        if action in ("alloc", "alloc_requested"):
+            live[addr] = (int(event.get("size", 0)), event.get("frames") or [])
+        elif action in ("free", "free_completed", "free_requested"):
+            live.pop(addr, None)
+    groups: dict[str, list] = {}
+    for size, frames in live.values():
+        site, source = _trace_site(frames)
+        bucket = groups.setdefault(site, [0, 0, source])
+        bucket[0] += size
+        bucket[1] += 1
+    ranked = sorted(groups.items(), key=lambda item: item[1][0], reverse=True)[:20]
+    print(
+        f"create_graph memory_trace peak={peak / 2**30:.2f}GiB blocks={len(live)} events={len(events)}",
+        flush=True,
+    )
+    for site, (size, count, source) in ranked:
+        print(
+            f"create_graph memory_trace group {size / 2**30:.2f}GiB n={count} site={site} line={source}",
+            flush=True,
+        )
 
 
 def is_python_function_node(node) -> bool:

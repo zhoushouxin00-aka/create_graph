@@ -41,6 +41,7 @@ from create_graph.compile_config import (
     compile_context,
     compiled_graph_count,
     mark_region_inputs,
+    observe_step_memory,
     is_python_function_node,
     torch_compile,
 )
@@ -205,6 +206,7 @@ def _note_step_memory() -> None:
     peak = max(_MEM_PEAK[0], torch.cuda.max_memory_allocated())
     _MEM_PEAK[0] = peak
     rank = os.environ.get("RANK", os.environ.get("LOCAL_RANK", "0"))
+    observe_step_memory(step, rank)
     if step % 100 != 0 or rank != "0":
         return
     print(
