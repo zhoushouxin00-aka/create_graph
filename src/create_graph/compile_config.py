@@ -335,10 +335,26 @@ def _limit_cross_layer_fusion() -> None:
 
     can_fuse_horizontal._cg = True
     choice.can_fuse_horizontal = staticmethod(can_fuse_horizontal)
+    original_can_fuse = scheduler.Scheduler.can_fuse
+
+    def can_fuse(self, node1, node2, *args, **kwargs) -> bool:
+        # The joint backward was fusing a chain that read about forty
+        # attention workspaces in one kernel, so none of them could be freed
+        # early. Stop growing a kernel past this many distinct reads.
+        try:
+            names = {dep.name for dep in node1.read_writes.reads}
+            names.update(dep.name for dep in node2.read_writes.reads)
+            if len(names) > 8:
+                return False
+        except Exception as exc:
+            print(f"create_graph fusion_read_cap {type(exc).__name__}: {exc}", flush=True)
+        return original_can_fuse(self, node1, node2, *args, **kwargs)
+
+    scheduler.Scheduler.can_fuse = can_fuse
     _FUSION_LIMIT_INSTALLED = True
     print(
         "create_graph fusion_distance="
-        f"{_FUSION_DISTANCE} max_fusion_size=8 reduction_horizontal_fusion=off",
+        f"{_FUSION_DISTANCE} max_fusion_size=8 fusion_read_cap=8",
         flush=True,
     )
 
