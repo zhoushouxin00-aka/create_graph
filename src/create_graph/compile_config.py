@@ -81,7 +81,7 @@ DEFAULT_CONFIG = CompileConfig()
 # "materialized backward", which bans them from recomputation, so the tape
 # stays about 70 GiB on AllScAIP. 0.5 is the saved-set target; the joint
 # compile also allows those materialized values to be recomputed.
-JOINT_ACTIVATION_BUDGET = 0.5
+JOINT_ACTIVATION_BUDGET = 0.3
 
 
 # ---------------------------------------------------------------------------
@@ -254,6 +254,9 @@ def symbolic_safe_ops():
         F.rms_norm = original
 
 
+_JOINT_COMPILE_LOGGED = False
+
+
 @contextlib.contextmanager
 def compile_context(config: CompileConfig, recompile_limit: int | None = None, *, joint: bool = False):
     """
@@ -290,6 +293,17 @@ def compile_context(config: CompileConfig, recompile_limit: int | None = None, *
                 functorch_patch["ban_recompute_materialized_backward"] = False
             if joint and hasattr(torch._functorch.config, "enable_autograd_cache"):
                 functorch_patch["enable_autograd_cache"] = False
+            if joint and hasattr(torch._functorch.config, "force_autograd_cache"):
+                functorch_patch["force_autograd_cache"] = False
+            if joint:
+                global _JOINT_COMPILE_LOGGED
+                if not _JOINT_COMPILE_LOGGED:
+                    _JOINT_COMPILE_LOGGED = True
+                    print(
+                        f"create_graph joint_compile budget={budget} "
+                        "materialized_backward_recompute=True",
+                        flush=True,
+                    )
             stack.enter_context(torch._functorch.config.patch(**functorch_patch))
         stack.enter_context(symbolic_safe_ops())
         stack.enter_context(_guard_comments_without_frames())
