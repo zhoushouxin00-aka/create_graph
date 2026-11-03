@@ -288,6 +288,8 @@ def compile_context(config: CompileConfig, recompile_limit: int | None = None, *
             # cannot be dropped, so the budget cannot shrink the tape.
             if joint and hasattr(torch._functorch.config, "ban_recompute_materialized_backward"):
                 functorch_patch["ban_recompute_materialized_backward"] = False
+            if joint and hasattr(torch._functorch.config, "enable_autograd_cache"):
+                functorch_patch["enable_autograd_cache"] = False
             stack.enter_context(torch._functorch.config.patch(**functorch_patch))
         stack.enter_context(symbolic_safe_ops())
         stack.enter_context(_guard_comments_without_frames())
