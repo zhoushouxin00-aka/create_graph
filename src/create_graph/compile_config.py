@@ -157,6 +157,10 @@ def default_inductor_options() -> dict[str, Any]:
         options["triton.mix_order_reduction"] = False
     if hasattr(triton, "coalesce_tiling_analysis") and torch_version() < (2, 12):
         options["triton.coalesce_tiling_analysis"] = False
+    # One backward kernel was fusing every layer's pointwise reductions and
+    # holding a 330 MiB buffer from each until that kernel ran. Cap the fused
+    # node count so a layer's workspace can be freed before the next layer.
+    options["max_fusion_size"] = 8
     return options
 
 
@@ -291,7 +295,10 @@ def _limit_cross_layer_fusion() -> None:
     are_long_distant_nodes._cg = True
     scheduler.Scheduler.are_long_distant_nodes = are_long_distant_nodes
     _FUSION_LIMIT_INSTALLED = True
-    print(f"create_graph fusion_distance={_FUSION_DISTANCE}", flush=True)
+    print(
+        f"create_graph fusion_distance={_FUSION_DISTANCE} max_fusion_size=8",
+        flush=True,
+    )
 
 
 def _node_nbytes(part, node) -> int:
