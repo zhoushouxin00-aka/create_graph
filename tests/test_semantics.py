@@ -552,3 +552,58 @@ def test_one_compile_covers_every_batch(norm):
         counts.append(compiled_graph_count())
     # the first two calls may compile twice (Dynamo's duck sizing), never more
     assert counts[-1] - counts[1] == 0, counts
+
+
+class NeighborFeatures(nn.Module):
+    """Two inputs that share a middle axis, like edge_direction and edge_distance_expansion."""
+
+    def __init__(self):
+        super().__init__()
+        self.dir = nn.Linear(3, 8)
+        self.exp = nn.Linear(4, 8)
+        self.out = nn.Linear(8, 1)
+
+    def forward(self, direction, expansion, index):
+        # index shares the neighbor axis and is an integer tensor, which Dynamo
+        # guards separately from the float inputs.
+        gathered = direction.gather(1, index.unsqueeze(-1).expand_as(direction))
+        h = self.dir(direction + gathered) + self.exp(expansion)
+        return self.out(h.mean(dim=1)).squeeze(-1)
+
+
+class NeighborModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.region = cg.compile(
+            NeighborFeatures(), config=cg.CompileConfig(backend="aot_eager")
+        )
+
+    def forward(self, data):
+        pos = data["pos"]
+        k = data["k"]
+        # (N, 1, 3) + (K, 3) -> (N, K, 3). K is the neighbor axis and is not padded.
+        direction = pos.unsqueeze(1) + pos.new_zeros(k, 3)
+        expansion = direction.pow(2).sum(-1, keepdim=True).expand(pos.shape[0], k, 4)
+        index = torch.arange(k).expand(pos.shape[0], k).contiguous()
+        return {"energy": self.region(direction, expansion, index)}
+
+
+def make_neighbor(n, k, seed=0):
+    gen = torch.Generator().manual_seed(seed)
+    return {"pos": torch.randn(n, 3, generator=gen, dtype=DTYPE), "k": k}
+
+
+@pytest.mark.compiled
+def test_neighbor_axis_one_compile():
+    """Neighbor lengths 31, 32, 33, 34 stay on the graph compiled by the first batch."""
+    model = build(NeighborModel)
+    start = compiled_graph_count()
+    assert_close(check_create_graph(model, make_neighbor(8, 32)))
+    first = compiled_graph_count()
+    assert first - start <= 1, (start, first)
+    counts = []
+    for n, k in [(8, 31), (9, 32), (10, 33), (8, 31), (11, 34)]:
+        out, grads = cg.create_graph(model, make_neighbor(n, k, seed=n + k))
+        (out["energy"].sum() + grads["pos"].square().sum()).backward()
+        counts.append(compiled_graph_count())
+    assert counts == [first] * len(counts), counts

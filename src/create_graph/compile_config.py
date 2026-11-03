@@ -17,7 +17,10 @@ from typing import Any
 import torch
 import torch._guards
 import torch.nn.functional as F
+from torch import Tensor, nn
 from torch.utils._traceback import format_frame
+
+from create_graph.pytree import flatten
 
 BACKENDS = ("inductor", "aot_eager", "eager")
 
@@ -32,10 +35,15 @@ class CompileConfig:
             Inductor (AOTAutograd derives its backward, the min-cut partitioner
             chooses what to save). "aot_eager" runs AOTAutograd without Inductor.
             "eager" runs the region and its VJP op by op (exact, for debugging).
-        dynamic: forwarded to torch.compile; True marks sizes dynamic from the
-            first compile, so one graph covers every batch.
+        dynamic: forwarded to ``torch.compile``. True also weakly marks every
+            input dimension larger than 1 before the compiled call, so an axis
+            that changes between batches (a neighbor count) is symbolic from
+            the first compile. A dimension the region specializes, such as a
+            linear layer's channels, stays static.
         memory_budget: AOTAutograd activation memory budget in (0, 1] for this
-            region's graphs; None keeps torch's default (no extra recompute).
+            region's graphs. None on the joint forward + VJP graph uses
+            ``JOINT_ACTIVATION_BUDGET`` (half the fully saved tape). None on a
+            checkpointed region keeps torch's default. 1.0 saves the whole tape.
         checkpoint: regex matched (``re.fullmatch``) against the module paths
             of the nn.Modules the region receives (its ``self`` and module
             arguments). Matching submodules become checkpointed blocks: compiled
@@ -67,6 +75,13 @@ class CompileConfig:
 
 
 DEFAULT_CONFIG = CompileConfig()
+
+# The joint graph inlines dE/dx into the forward. At budget 1.0 the partitioner
+# saves every intermediate of that VJP. Those ops are also marked
+# "materialized backward", which bans them from recomputation, so the tape
+# stays about 70 GiB on AllScAIP. 0.5 is the saved-set target; the joint
+# compile also allows those materialized values to be recomputed.
+JOINT_ACTIVATION_BUDGET = 0.5
 
 
 # ---------------------------------------------------------------------------
@@ -129,6 +144,11 @@ def default_inductor_options() -> dict[str, Any]:
     """
     options: dict[str, Any] = {}
     triton = getattr(torch._inductor.config, "triton", None)
+    # A captured CUDA graph keeps its workspace in a private GPU pool for the
+    # life of the process. One pool per concrete shape is the compile result
+    # that would otherwise stay resident after the step. Replay is not used.
+    if hasattr(triton, "cudagraphs"):
+        options["triton.cudagraphs"] = False
     if hasattr(triton, "mix_order_reduction"):
         options["triton.mix_order_reduction"] = False
     if hasattr(triton, "coalesce_tiling_analysis") and torch_version() < (2, 12):
@@ -178,6 +198,38 @@ def torch_compile(fn: Callable, config: CompileConfig, *, fullgraph: bool = True
     return torch.compile(fn, fullgraph=fullgraph, dynamic=config.dynamic, options=options or None)
 
 
+def mark_region_inputs(*trees) -> None:
+    """Weakly mark every input size greater than 1.
+
+    A dimension the compiled region specializes (a linear layer's channels)
+    stays static. A dimension it only reduces or indexes stays symbolic from
+    the first compile. Dims of size 0 or 1, broadcast dims (stride 0), and
+    parameters are left alone.
+    """
+    seen: set[int] = set()
+    for tree in trees:
+        for leaf in flatten(tree)[0]:
+            if not isinstance(leaf, Tensor) or isinstance(leaf, nn.Parameter):
+                continue
+            if leaf.dim() == 0 or id(leaf) in seen:
+                continue
+            seen.add(id(leaf))
+            for dim, size in enumerate(leaf.shape):
+                if size <= 1 or leaf.stride(dim) == 0:
+                    continue
+                hint_dynamic_dim(leaf, dim)
+
+
+def hint_dynamic_dim(tensor, dim: int) -> None:
+    """Weakly mark one input dimension dynamic.
+
+    A dimension the compiled region then specializes stays static. A dimension
+    it only reduces or indexes stays symbolic from the first compile, instead
+    of freezing at the first length Dynamo sees.
+    """
+    torch._dynamo.maybe_mark_dynamic(tensor, dim)
+
+
 def _rms_norm_composite(input, normalized_shape, weight=None, eps=None):
     dims = tuple(range(-len(normalized_shape), 0))
     if eps is None:
@@ -203,7 +255,7 @@ def symbolic_safe_ops():
 
 
 @contextlib.contextmanager
-def compile_context(config: CompileConfig, recompile_limit: int | None = None):
+def compile_context(config: CompileConfig, recompile_limit: int | None = None, *, joint: bool = False):
     """
     Scope of every call into a compiled region (compiles happen lazily on the
     first call, recompiles on later ones):
@@ -227,10 +279,16 @@ def compile_context(config: CompileConfig, recompile_limit: int | None = None):
         patches[name] = max(recompile_limit, getattr(dynamo, name))
     with contextlib.ExitStack() as stack:
         stack.enter_context(dynamo.patch(**patches))
-        if config.memory_budget is not None:
-            stack.enter_context(
-                torch._functorch.config.patch(activation_memory_budget=config.memory_budget)
-            )
+        budget = config.memory_budget
+        if budget is None and joint:
+            budget = JOINT_ACTIVATION_BUDGET
+        if budget is not None:
+            functorch_patch: dict[str, Any] = {"activation_memory_budget": budget}
+            # Inlined VJP ops are tagged materialized-backward and otherwise
+            # cannot be dropped, so the budget cannot shrink the tape.
+            if joint and hasattr(torch._functorch.config, "ban_recompute_materialized_backward"):
+                functorch_patch["ban_recompute_materialized_backward"] = False
+            stack.enter_context(torch._functorch.config.patch(**functorch_patch))
         stack.enter_context(symbolic_safe_ops())
         stack.enter_context(_guard_comments_without_frames())
         yield

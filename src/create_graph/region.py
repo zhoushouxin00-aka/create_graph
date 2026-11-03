@@ -26,6 +26,7 @@ from __future__ import annotations
 import dataclasses
 import functools
 import itertools
+import os
 import types
 from collections.abc import Callable
 from typing import Any
@@ -38,6 +39,8 @@ from create_graph.compile_config import (
     DEFAULT_CONFIG,
     CompileConfig,
     compile_context,
+    compiled_graph_count,
+    mark_region_inputs,
     is_python_function_node,
     torch_compile,
 )
@@ -188,6 +191,38 @@ def _call(fn, args, kwargs):
     return fn(*args, **kwargs)
 
 
+def _note_step_memory() -> None:
+    """Floor at entry is what the previous step left on the GPU.
+
+    The compiled tape of this step shows up in the peak, not in the floor.
+    Rank 0 prints both every 100 steps.
+    """
+    if not torch.cuda.is_available():
+        return
+    step = _MEM_STEPS[0]
+    _MEM_STEPS[0] = step + 1
+    alloc = torch.cuda.memory_allocated()
+    peak = max(_MEM_PEAK[0], torch.cuda.max_memory_allocated())
+    _MEM_PEAK[0] = peak
+    rank = os.environ.get("RANK", os.environ.get("LOCAL_RANK", "0"))
+    if step % 100 != 0 or rank != "0":
+        return
+    print(
+        "create_graph memory "
+        f"step={step} allocated={alloc / 2**30:.2f}GiB "
+        f"peak={peak / 2**30:.2f}GiB "
+        f"reserved={torch.cuda.memory_reserved() / 2**30:.2f}GiB "
+        f"graphs={compiled_graph_count()}",
+        flush=True,
+    )
+    torch.cuda.reset_peak_memory_stats()
+    _MEM_PEAK[0] = alloc
+
+
+_MEM_STEPS = [0]
+_MEM_PEAK = [0]
+
+
 def _region_body(fn, args, kwargs, wrt, keep, outputs, create):
     with torch.enable_grad():
         out = fn(*args, **kwargs)
@@ -303,6 +338,8 @@ class Region:
         if self.config.backend == "eager":
             return self.fn(*args, **kwargs)
         compiled = _compiled("normal", self)
+        if self.config.dynamic:
+            mark_region_inputs(args, kwargs)
         with compile_context(self.config):
             return compiled(self.fn, args, kwargs)
 
@@ -403,13 +440,16 @@ def region_call(state: State, region: Region, args, kwargs):
         setattr(obj, name, new)
     try:
         _check_functions(region, new_args, new_kwargs, wrt)
+        _note_step_memory()
+        if region.config.dynamic:
+            mark_region_inputs(new_args, new_kwargs, wrt)
         if region.config.checkpoint is not None:
             out, grads = _checkpointed(
                 state, region, new_args, new_kwargs, new_leaves, wrt, keep, outputs
             )
         else:
             body = _compiled("train" if state.train else "eval", region)
-            with compile_context(region.config):
+            with compile_context(region.config, joint=True):
                 out, grads = body(
                     region.fn, new_args, new_kwargs, tuple(wrt), tuple(keep), outputs, state.train
                 )

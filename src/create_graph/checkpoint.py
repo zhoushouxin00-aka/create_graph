@@ -33,7 +33,7 @@ from collections.abc import Iterable
 import torch
 from torch import Tensor, nn
 
-from create_graph.compile_config import CompileConfig, compile_context, torch_compile
+from create_graph.compile_config import CompileConfig, compile_context, mark_region_inputs, torch_compile
 from create_graph.errors import ContractError
 from create_graph.pytree import flatten, is_float, unflatten
 
@@ -137,16 +137,22 @@ class BlockRunner:
 
     def forward(self, call: _BlockCall, inputs: list[Tensor]):
         fwd, _ = self._functions(call.static)
+        leaves = call.with_inputs(inputs)
+        if self.config.dynamic:
+            mark_region_inputs(leaves)
         with compile_context(self.config, self.recompile_limit):
-            return fwd(call.block, call.spec, call.with_inputs(inputs))
+            return fwd(call.block, call.spec, leaves)
 
     def vjp(self, call: _BlockCall, inputs: list[Tensor], g_outs: list[Tensor], create: bool):
         _, vjp = self._functions(call.static)
+        leaves = call.with_inputs(inputs)
+        if self.config.dynamic:
+            mark_region_inputs(leaves, g_outs)
         with compile_context(self.config, self.recompile_limit):
             return vjp(
                 call.block,
                 call.spec,
-                call.with_inputs(inputs),
+                leaves,
                 call.slots,
                 call.out_slots,
                 g_outs,
