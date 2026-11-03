@@ -274,31 +274,73 @@ _FUSION_LIMIT_INSTALLED = False
 _FUSION_DISTANCE = 8
 
 
+def _reads_are_large(node) -> bool:
+    """A node whose reads are a few hundred MiB must not be fused sideways.
+
+    Horizontal fusion keeps every such buffer live until the combined kernel.
+    One backward kernel was reading about forty of them at once.
+    """
+    from torch._inductor.virtualized import V
+
+    total = 0
+    seen: set[str] = set()
+    for dep in node.read_writes.reads:
+        name = getattr(dep, "name", None)
+        if not name or name in seen:
+            continue
+        seen.add(name)
+        numel = getattr(dep, "get_numel", None)
+        if numel is None:
+            continue
+        try:
+            count = int(V.graph.sizevars.size_hint(numel(), fallback=0))
+        except Exception:
+            continue
+        total += count * 4
+        if total >= 128 * 1024**2:
+            return True
+    return False
+
+
 def _limit_cross_layer_fusion() -> None:
     global _FUSION_LIMIT_INSTALLED
     if _FUSION_LIMIT_INSTALLED:
         return
+    import torch._inductor.choices as choices
     import torch._inductor.scheduler as scheduler
 
-    method = scheduler.Scheduler.are_long_distant_nodes
-    if getattr(method, "_cg", False):
+    scheduler.Scheduler.are_long_distant_nodes = _distant_nodes
+    choice = choices.InductorChoices
+    current = choice.__dict__.get("can_fuse_horizontal")
+    if getattr(getattr(current, "__func__", current), "_cg", False):
         _FUSION_LIMIT_INSTALLED = True
         return
+    original = current.__func__ if isinstance(current, staticmethod) else current
 
-    def are_long_distant_nodes(self, node1, node2) -> bool:
-        proximity = max(
-            abs(node1.min_order - node2.max_order),
-            abs(node2.min_order - node1.max_order),
-        )
-        return proximity > _FUSION_DISTANCE
+    def can_fuse_horizontal(sched, node1, node2, shared_data_score) -> bool:
+        try:
+            if _reads_are_large(node1) or _reads_are_large(node2):
+                return False
+        except Exception:
+            pass
+        return original(sched, node1, node2, shared_data_score)
 
-    are_long_distant_nodes._cg = True
-    scheduler.Scheduler.are_long_distant_nodes = are_long_distant_nodes
+    can_fuse_horizontal._cg = True
+    choice.can_fuse_horizontal = staticmethod(can_fuse_horizontal)
     _FUSION_LIMIT_INSTALLED = True
     print(
-        f"create_graph fusion_distance={_FUSION_DISTANCE} max_fusion_size=8",
+        "create_graph fusion_distance="
+        f"{_FUSION_DISTANCE} max_fusion_size=8 large_read_fusion=off",
         flush=True,
     )
+
+
+def _distant_nodes(self, node1, node2) -> bool:
+    proximity = max(
+        abs(node1.min_order - node2.max_order),
+        abs(node2.min_order - node1.max_order),
+    )
+    return proximity > _FUSION_DISTANCE
 
 
 def _node_nbytes(part, node) -> int:
