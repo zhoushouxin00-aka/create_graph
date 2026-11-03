@@ -318,11 +318,19 @@ def _limit_cross_layer_fusion() -> None:
     original = current.__func__ if isinstance(current, staticmethod) else current
 
     def can_fuse_horizontal(sched, node1, node2, shared_data_score) -> bool:
+        # A backward kernel was horizontally fusing every layer's reductions
+        # and keeping each layer's workspace until that kernel. Keep reductions
+        # in their own kernels so a layer can free its buffers first.
         try:
+            if node1.is_reduction() or node2.is_reduction():
+                return False
             if _reads_are_large(node1) or _reads_are_large(node2):
                 return False
-        except Exception:
-            pass
+        except Exception as exc:
+            print(
+                f"create_graph fusion_guard {type(exc).__name__}: {exc}",
+                flush=True,
+            )
         return original(sched, node1, node2, shared_data_score)
 
     can_fuse_horizontal._cg = True
@@ -330,7 +338,7 @@ def _limit_cross_layer_fusion() -> None:
     _FUSION_LIMIT_INSTALLED = True
     print(
         "create_graph fusion_distance="
-        f"{_FUSION_DISTANCE} max_fusion_size=8 large_read_fusion=off",
+        f"{_FUSION_DISTANCE} max_fusion_size=8 reduction_horizontal_fusion=off",
         flush=True,
     )
 
