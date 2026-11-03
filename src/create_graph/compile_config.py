@@ -260,6 +260,38 @@ def symbolic_safe_ops():
 
 _JOINT_COMPILE_LOGGED = False
 _PARTITION_INSTALLED = False
+_FUSION_LIMIT_INSTALLED = False
+
+# Horizontal fusion otherwise merges every layer's pointwise reductions into
+# one kernel. Those 330 MiB buffers then stay live until the kernel runs, and
+# the backward peaks near 43 GiB on top of the saved activations. Nodes more
+# than this many scheduler-orders apart are left unfused, so a layer can free
+# its buffers before the next layer starts. Producer/consumer fusion is unchanged.
+_FUSION_DISTANCE = 8
+
+
+def _limit_cross_layer_fusion() -> None:
+    global _FUSION_LIMIT_INSTALLED
+    if _FUSION_LIMIT_INSTALLED:
+        return
+    import torch._inductor.scheduler as scheduler
+
+    method = scheduler.Scheduler.are_long_distant_nodes
+    if getattr(method, "_cg", False):
+        _FUSION_LIMIT_INSTALLED = True
+        return
+
+    def are_long_distant_nodes(self, node1, node2) -> bool:
+        proximity = max(
+            abs(node1.min_order - node2.max_order),
+            abs(node2.min_order - node1.max_order),
+        )
+        return proximity > _FUSION_DISTANCE
+
+    are_long_distant_nodes._cg = True
+    scheduler.Scheduler.are_long_distant_nodes = are_long_distant_nodes
+    _FUSION_LIMIT_INSTALLED = True
+    print(f"create_graph fusion_distance={_FUSION_DISTANCE}", flush=True)
 
 
 def _node_nbytes(part, node) -> int:
@@ -391,6 +423,7 @@ def compile_context(config: CompileConfig, recompile_limit: int | None = None, *
         patches[name] = max(recompile_limit, getattr(dynamo, name))
     with contextlib.ExitStack() as stack:
         stack.enter_context(dynamo.patch(**patches))
+        _limit_cross_layer_fusion()
         if joint:
             _install_joint_saved_cap()
         budget = config.memory_budget
