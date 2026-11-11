@@ -33,7 +33,12 @@ from collections.abc import Iterable
 import torch
 from torch import Tensor, nn
 
-from create_graph.compile_config import CompileConfig, compile_context, mark_region_inputs, torch_compile
+from create_graph.compile_config import (
+    CompileConfig,
+    compile_context,
+    mark_region_inputs,
+    torch_compile,
+)
 from create_graph.errors import ContractError
 from create_graph.pytree import flatten, is_float, unflatten
 

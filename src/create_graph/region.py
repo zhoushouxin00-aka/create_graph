@@ -40,9 +40,9 @@ from create_graph.compile_config import (
     CompileConfig,
     compile_context,
     compiled_graph_count,
+    is_python_function_node,
     mark_region_inputs,
     observe_step_memory,
-    is_python_function_node,
     torch_compile,
 )
 from create_graph.errors import ContractError

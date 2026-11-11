@@ -1,84 +1,73 @@
 # create_graph
 
-保守力训练要先对坐标求导，再对参数求导。`create_graph` 把前一步写进前向图，后面就和普通训练一样：一次 `loss.backward()`。
+把能量 `E` 和坐标梯度 `dE/dx` 放进同一张前向图，用一次 `loss.backward()` 训练保守力模型。模型和 PyTorch 的求导公式保持原样，编译器可以一起优化能量与求力的计算。
 
-装进你自己的训练环境，不要把这个仓库拷进你的项目：
+常用接口只有两个：`cg.compile` 标记计算能量的网络，`cg.create_graph` 返回模型输出与输入梯度。
+
+## 安装与最小用法
+
+在自己的训练环境中安装，Python >= 3.10，依赖 `torch>=2.11`：
 
 ```bash
-pip install git+https://github.com/zhoushouxin00-aka/create_graph.git
+pip install "git+https://github.com/zhoushouxin00-aka/create_graph.git@online/for_initial_version"
 ```
 
-只依赖 `torch>=2.11`。torch 2.10 及更早会退回原来的 eager 求力，结果仍对，只是不编译。
-
-## 它在做什么
-
-保守力是两步求导。模型算出能量 `E`，力是 `F = -dE/dx`。loss 同时看能量和力，再对参数求导，所以参数梯度要穿过“对坐标的那一次求导”。
-
-手写的做法是：
+下面是完整的训练步；`grads["pos"]` 是 `dE/dpos`，力需要取负号：
 
 ```python
-energy = model(batch)["energy"]
-force = -torch.autograd.grad(energy.sum(), batch["pos"], create_graph=True)[0]
-loss = energy_loss(energy) + force_loss(force)
+import torch
+from torch import nn
+import create_graph as cg
+
+network = cg.compile(nn.Sequential(nn.Linear(3, 16), nn.SiLU(), nn.Linear(16, 1)))
+
+def model(batch):
+    return {"energy": network(batch["pos"])}
+
+batch = {"pos": torch.randn(8, 3)}
+out, grads = cg.create_graph(model, batch)
+force = -grads["pos"]
+loss = out["energy"].square().mean() + force.square().mean()
 loss.backward()
 ```
 
-求力本身已经是一张反向图。后面的编译器看不到它，显存预算和逐 block 重算也作用不到它上面。
+集成已有模型时，在初始化中写 `self.network = cg.compile(self.network)`，训练时调用 `cg.create_graph(model, batch)`。邻居表、边向量等几何计算可以留在网络前面，继续使用原来的 autograd。包含区域外几何计算的完整示例见 [`examples/mlp.py`](examples/mlp.py)。
 
-`create_graph` 不另写一套求导规则。算能量的那段用 `cg.compile` 标出来。调用 `cg.create_graph` 时，这段的前向和 `dE/dx` 合成一张普通的一阶图。`loss.backward()` 就是对这张图的普通反向。邻居表、边向量这些几何留在区域前面，仍走原来的 autograd。
+调用约定：
+
+- 模型只计算能量，关闭自身的求力头。一次调用只支持一个依赖所选输入的 `cg.compile` 区域。
+- 默认对输出的 `energy`、输入的 `pos` 求导；输入支持字典或属性对象。输出本身是张量时传 `outputs=None`；嵌套输出可传 `outputs=lambda out: out["energy"]["energy"]`。
+- 编译区域应返回最终用于求导的能量。能量缩放或额外依赖坐标的能量项应放在区域内。
+- DDP 训练时将 DDP 包装后的模型传给 `cg.create_graph`。
+
+验证或分子动力学只需要力、不需要参数梯度时，传 `train=False`，返回的输出和梯度都会脱离计算图：
+
+```python
+out, grads = cg.create_graph(model, batch, train=False)
+```
+
+## 它怎样工作
+
+通常的保守力训练先用 `torch.autograd.grad(..., create_graph=True)` 求力，再对能量和力组成的 loss 求参数梯度。`cg.compile` 标记的区域把网络前向与求力合成一张普通的一阶图，后续反向由 AOTAutograd 生成、Inductor 编译，激活重算也可以作用于求力部分。
 
 ```mermaid
 flowchart LR
-  geom["邻居和几何，eager"] --> region["cg.compile 的网络：E 和 dE/dx 在同一张图里"]
+  geom["邻居和几何，eager"] --> region["cg.compile：E 与 dE/dx"]
   region --> loss["loss(E, F)"]
-  loss --> paramGrad["loss.backward()：对参数的普通反向"]
+  loss --> paramGrad["loss.backward()：参数梯度"]
 ```
 
-AllScAIP 85M、单卡、一步训练：编译后大约是 eager create_graph 的 1.87 倍。放进 fairchem 的训练循环后大约 1.48 倍。峰值显存和 eager 差不多；要省显存，用下面的 memory budget 或 checkpoint。多卡加速还没有测。
+## 长训验证
 
-## 怎么用
+AllScAIP 在 **2 节点 × 8 张 RTX PRO 5000** 上做了 TF32、FP32 的 eager / create_graph 四组长训。TF32 两组均完成 12 epoch，训练墙钟加速约 **1.42×**；FP32 按双方都已完成的前 10 epoch 比较，约 **1.35×**。
 
-模型在这次调用里只算能量，把自己的力头关掉。`cg.compile` 包住最终用来求导的那个能量。默认对输出里的 `energy` 求导，对输入里的 `pos` 求导。
+这些结果支持该配置下的性能与持续运行表现。长程 loss 和梯度轨迹有分叉，每轮验证限制为 1 step，尚不能据此认定最终模型质量等价。运行状态、OOM 修复、计时口径和版本对应证据见 [`docs/validation.md`](docs/validation.md)。
 
-```python
-import create_graph as cg
+## 显存与编译配置
 
-self.network = cg.compile(self.network)
+默认使用 `backend="inductor"`、`dynamic=True`。不显式指定 `memory_budget` 时，联合图使用 `0.3` 的激活预算；当预计保存的激活超过 24 GiB 时，内部策略会增加重算。默认也限制融合规模，以尽早释放各层工作区。这些是编译启发式，**不是整卡峰值显存上限**。
 
-out, grads = cg.create_graph(model, batch)
-loss = energy_loss(out["energy"]) + force_loss(-grads["pos"])
-loss.backward()
-```
-
-[`examples/mlp.py`](examples/mlp.py) 是上面这三行的完整脚本：一个小网络，坐标先在区域外做一次中心化，再进编译过的网络。
-
-```bash
-python examples/mlp.py
-```
-
-输出如果是能量张量本身，而不是带 `energy` 键的字典，调用时写 `outputs=None`。fairchem 那种 `{"energy": {"energy": E}}`，传一个把张量取出来的函数：`outputs=lambda out: out["energy"]["energy"]`。
-
-## 仓库里有什么
-
-pip 只会装走 `src/create_graph/`。
-
-| 路径 | 作用 |
-|---|---|
-| `src/create_graph/api.py` | `create_graph` 和 `compile`，集成时用这两个 |
-| `src/create_graph/region.py` | 把区域的前向和 `dE/dx` 放进同一张图 |
-| `src/create_graph/compile_config.py` | 编译选项。整个包里只有这个文件碰 torch 的私有接口 |
-| `src/create_graph/ops.py` | 融合算子登记。普通模型用不到 |
-| `examples/mlp.py` | 最小可运行用法 |
-| `tests/test_semantics.py`、`test_custom_ops.py`、`test_ddp.py`、`test_torch_surface.py` | 不装大模型也能跑的测试 |
-| `kernels/edge_attn/` | 融合 attention 的登记例子，不进安装包 |
-
-```bash
-python -m pytest tests -m "not gpu"
-```
-
-## 进阶
-
-显存不够时，给区域一个预算，或者按子模块路径做逐 block 重算：
+需要调整时，选项集中在 `CompileConfig`：
 
 ```python
 self.network = cg.compile(
@@ -87,14 +76,21 @@ self.network = cg.compile(
 )
 ```
 
-`memory_budget` 是 `(0, 1]` 里的激活显存预算。`checkpoint` 是对子模块路径的正则（`re.fullmatch`）：匹配到的 block 只留输入，反传时重算。默认 `backend="inductor"`、`dynamic=True`，一般不用改。
+`memory_budget` 的范围是 `(0, 1]`，控制保存激活与重算的取舍；`1.0` 使用原始保存策略。`checkpoint` 对子模块路径做 `re.fullmatch`，匹配到的 block 只保存输入，反传时重算。不指定预算的 checkpoint 区域使用 PyTorch 默认预算。
 
-验证或分子动力学只要力、不要参数梯度时：
+编译路径需要 PyTorch 支持在图内追踪 `autograd.grad`。本次发布检查使用 PyTorch 2.14.1；其他版本应先跑下面的测试。若在旧版 torch 上用 `--no-deps` 安装，检测到不支持时会警告并退回 eager 求力。
 
-```python
-out, grads = cg.create_graph(model, batch, train=False)
+编译适配集中在 `compile_config.py`。其中融合与激活分区补丁使用 PyTorch 私有接口，首次执行后会保留在进程中，也会影响同进程后续的其他编译；升级 PyTorch 时需重新验证。
+
+## 示例与检查
+
+在已安装本包、pytest 的环境中：
+
+```bash
+python examples/mlp.py
+python -m pytest tests -m "not gpu"
 ```
 
-这时力和输出都不带计算图。
+测试覆盖能量、坐标梯度、参数梯度、动态形状、checkpoint、自定义算子和两进程 CPU DDP。`cg.create_graph(..., exact=True)` 可用于与 eager 求导对照。
 
-普通算子的二阶导由 PyTorch 自己完成。只有一个融合 kernel 看不进计算图、又必须求两次导时，才用 `cg.custom_op` 登记 `forward1`、`backward1` 和 `backward2`。[`kernels/edge_attn/ops.py`](kernels/edge_attn/ops.py) 是带 mask 的 attention 例子。
+普通算子的二阶导由 PyTorch 完成。需要支持二次求导的融合 kernel 可用 `cg.custom_op` 登记 `forward1`、`backward1`、`backward2`；见 [`kernels/edge_attn/ops.py`](kernels/edge_attn/ops.py)。pip 安装包只包含 `src/create_graph/`，不包含该 kernel 示例、训练数据和 benchmark。

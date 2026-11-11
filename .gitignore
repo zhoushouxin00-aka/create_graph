@@ -7,3 +7,6 @@ __pycache__/
 data/
 bench/
 uv.lock
+pytorch-errorfile-*.pickle
+torchinductor_*/
+dist/
