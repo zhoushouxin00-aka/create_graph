@@ -57,25 +57,6 @@ flowchart LR
   loss --> paramGrad["loss.backward()：参数梯度"]
 ```
 
-## 显存与编译配置
-
-默认使用 `backend="inductor"`、`dynamic=True`。不显式指定 `memory_budget` 时，联合图使用 `0.3` 的激活预算；当预计保存的激活超过 24 GiB 时，内部策略会增加重算。默认也限制融合规模，以尽早释放各层工作区。这些是编译启发式，**不是整卡峰值显存上限**。
-
-需要调整时，选项集中在 `CompileConfig`：
-
-```python
-self.network = cg.compile(
-    self.network,
-    config=cg.CompileConfig(memory_budget=0.5, checkpoint=r"blocks\.\d+"),
-)
-```
-
-`memory_budget` 的范围是 `(0, 1]`，控制保存激活与重算的取舍；`1.0` 使用原始保存策略。`checkpoint` 对子模块路径做 `re.fullmatch`，匹配到的 block 只保存输入，反传时重算。不指定预算的 checkpoint 区域使用 PyTorch 默认预算。
-
-编译路径需要 PyTorch 支持在图内追踪 `autograd.grad`。切换 PyTorch 版本时，应先运行本仓库的测试。若在旧版 torch 上用 `--no-deps` 安装，检测到不支持时会警告并退回 eager 求力。
-
-编译适配集中在 `compile_config.py`。其中融合与激活分区补丁使用 PyTorch 私有接口，首次执行后会保留在进程中，也会影响同进程后续的其他编译；升级 PyTorch 时需重新验证。
-
 ## 示例与检查
 
 在已安装本包、pytest 的环境中：
