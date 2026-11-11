@@ -57,12 +57,6 @@ flowchart LR
   loss --> paramGrad["loss.backward()：参数梯度"]
 ```
 
-## 长训验证
-
-AllScAIP 在 **2 节点 × 8 张 RTX PRO 5000** 上做了 TF32、FP32 的 eager / create_graph 四组长训。TF32 两组均完成 12 epoch，训练墙钟加速约 **1.42×**；FP32 按双方都已完成的前 10 epoch 比较，约 **1.35×**。
-
-这些结果支持该配置下的性能与持续运行表现。长程 loss 和梯度轨迹有分叉，每轮验证限制为 1 step，尚不能据此认定最终模型质量等价。运行状态、OOM 修复、计时口径和版本对应证据见 [`docs/validation.md`](docs/validation.md)。
-
 ## 显存与编译配置
 
 默认使用 `backend="inductor"`、`dynamic=True`。不显式指定 `memory_budget` 时，联合图使用 `0.3` 的激活预算；当预计保存的激活超过 24 GiB 时，内部策略会增加重算。默认也限制融合规模，以尽早释放各层工作区。这些是编译启发式，**不是整卡峰值显存上限**。
@@ -78,7 +72,7 @@ self.network = cg.compile(
 
 `memory_budget` 的范围是 `(0, 1]`，控制保存激活与重算的取舍；`1.0` 使用原始保存策略。`checkpoint` 对子模块路径做 `re.fullmatch`，匹配到的 block 只保存输入，反传时重算。不指定预算的 checkpoint 区域使用 PyTorch 默认预算。
 
-编译路径需要 PyTorch 支持在图内追踪 `autograd.grad`。本次发布检查使用 PyTorch 2.14.1；其他版本应先跑下面的测试。若在旧版 torch 上用 `--no-deps` 安装，检测到不支持时会警告并退回 eager 求力。
+编译路径需要 PyTorch 支持在图内追踪 `autograd.grad`。切换 PyTorch 版本时，应先运行本仓库的测试。若在旧版 torch 上用 `--no-deps` 安装，检测到不支持时会警告并退回 eager 求力。
 
 编译适配集中在 `compile_config.py`。其中融合与激活分区补丁使用 PyTorch 私有接口，首次执行后会保留在进程中，也会影响同进程后续的其他编译；升级 PyTorch 时需重新验证。
 
