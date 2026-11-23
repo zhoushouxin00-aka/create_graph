@@ -16,14 +16,15 @@ import create_graph as cg
 
 
 class Network(nn.Module):
-    """The parameterized part. Its forward return value is the energy."""
+    """Positions, geometry and network together return the energy."""
 
     def __init__(self):
         super().__init__()
         self.layers = nn.Sequential(nn.Linear(3, 16), nn.SiLU(), nn.Linear(16, 1))
 
     def forward(self, pos):
-        return self.layers(pos).sum()
+        centered = pos - pos.mean(dim=0, keepdim=True)
+        return self.layers(centered).sum()
 
 
 class Model(nn.Module):
@@ -32,9 +33,7 @@ class Model(nn.Module):
         self.network = cg.compile(Network())
 
     def forward(self, batch):
-        # Centering stays eager. Only the network is a compiled region.
-        centered = batch["pos"] - batch["pos"].mean(dim=0, keepdim=True)
-        return {"energy": self.network(centered)}
+        return {"energy": self.network(batch["pos"])}
 
 
 def energy_loss(energy, target):

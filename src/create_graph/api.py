@@ -73,8 +73,7 @@ def _forbidden_grad(grad):
 
 @contextlib.contextmanager
 def _no_input_gradients(leaves: dict[str, Tensor]):
-    """While the model runs, nothing may differentiate w.r.t. the inputs: the
-    regions differentiate detached copies, the chain runs after the model."""
+    """Only the energy region may differentiate its own copies of the inputs."""
     handles = [leaf.register_hook(_forbidden_grad) for leaf in leaves.values()]
     try:
         yield
@@ -160,8 +159,8 @@ def create_graph(
     for every name in ``inputs``.
 
     The region (``cg.compile``) that produces the differentiated output computes
-    it together with its VJP in one compiled graph; the eager code before it is
-    chained with autograd. In training (``train=True``, default when the model
+    it together with its VJP in one compiled graph. The region must receive the
+    original differentiated inputs and include all differentiable preprocessing. In training (``train=True``, default when the model
     is in training mode and grad is enabled) the grads are differentiable w.r.t.
     the parameters, so ``loss(out, grads).backward()`` is the parameter gradient
     of the conservative-force loss. ``train=False`` gives first-order grads and
@@ -211,7 +210,7 @@ def create_graph(
             out = _detached(out)
     else:
         _check_output(target, state)
-        found = state.region.input_grads(leaf_list, train)
+        found = [state.region.grads[name] for name in names]
     grads = {
         name: torch.zeros_like(leaf) if g is None else g
         for (name, leaf), g in zip(leaves.items(), found, strict=True)

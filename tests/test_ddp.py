@@ -32,15 +32,16 @@ class Net(nn.Module):
         self.embed, self.out = nn.Linear(4, HIDDEN), nn.Linear(HIDDEN, 1)
         self.region = cg.compile(self._energy, config=cg.CompileConfig(backend="aot_eager"))
 
-    def _energy(self, vec, dist):
+    def _energy(self, data):
+        vec = data["pos"][data["src"]] - data["pos"][data["dst"]]
+        dist = vec.norm(dim=-1)
         h = torch.tanh(self.embed(torch.cat([vec, dist[:, None]], dim=-1)))
         for layer in self.layers:
             h = h + nn.functional.silu(layer(h))
         return self.out(h).sum().reshape(1)
 
     def forward(self, data):
-        vec = data["pos"][data["src"]] - data["pos"][data["dst"]]
-        return {"energy": self.region(vec, vec.norm(dim=-1))}
+        return {"energy": self.region(data)}
 
 
 def _data(rank):
@@ -70,8 +71,8 @@ def _worker(rank, world, port, path, ddp_optimizer):
 
         original = region.compile_context
 
-        def with_ddp_optimizer(config):
-            stack = original(config)
+        def with_ddp_optimizer(config, *args, **kwargs):
+            stack = original(config, *args, **kwargs)
             patch = torch._dynamo.config.patch(optimize_ddp=True)
 
             class Both:
@@ -157,8 +158,25 @@ def test_ddp_optimizer_would_split_the_region():
         expected = _expected_grads()
         try:
             result = _run(ddp_optimizer=True)
-        except Exception:
-            return  # the split graph does not even compile: the patch is needed
+        except mp.ProcessRaisedException as error:
+            message = str(error)
+            # A broken wrapper or test environment is not evidence that DDP's
+            # graph splitting is incompatible with the joint energy/VJP graph.
+            assert not any(
+                name in message for name in ("TypeError:", "PermissionError:", "ContractError:")
+            ), message
+            assert any(
+                marker in message
+                for marker in (
+                    "BackendCompilerFailed",
+                    "Unsupported",
+                    "TorchRuntimeError",
+                    "not have been used in the graph",
+                    "does not require grad",
+                    "does not support double backward",
+                )
+            ), message
+            return  # the split graph failed during tracing, compilation or autograd
     finally:
         torch.set_default_dtype(torch.float32)
     assert result["graphs"] != 1 or _rel(result["grads"], expected) > 1e-6

@@ -1,8 +1,8 @@
 """
 Mechanism tests on small functions (CPU, float64): every case is compared with
 eager create_graph (``exact=True``): output, input gradients, a loss coupling
-both, and the parameter gradients of that loss. They pin down the semantics: eager code before the
-region, inputs of every kind, autograd semantics inside the region, outputs,
+both, and the parameter gradients of that loss. They pin down the semantics: geometry inside the
+energy region, inputs of every kind, autograd semantics inside the region, outputs,
 evaluation mode, the contract errors and per-block checkpointing.
 """
 
@@ -70,18 +70,21 @@ class Energy(nn.Module):
 
 
 class Model(nn.Module):
-    """Eager geometry, then the energy region."""
+    """The region receives raw inputs and computes geometry and energy."""
 
     def __init__(self, config=None, **kw):
         super().__init__()
         self.energy = Energy(**kw)
         self.region = cg.compile(
-            self.energy, config=config or cg.CompileConfig(backend="aot_eager")
+            self._energy, config=config or cg.CompileConfig(backend="aot_eager")
         )
 
-    def forward(self, data):
+    def _energy(self, data):
         vec, dist = geometry(data)
-        return {"energy": self.region(vec, dist, data["src"], data["batch"], data["num_graphs"])}
+        return self.energy(vec, dist, data["src"], data["batch"], data["num_graphs"])
+
+    def forward(self, data):
+        return {"energy": self.region(data)}
 
 
 def build(cls=Model, **kw):
@@ -91,7 +94,7 @@ def build(cls=Model, **kw):
 
 @pytest.mark.parametrize("norm", ["ln", "rms"])
 @pytest.mark.parametrize("act", ["gelu", "tanh", "silu"])
-def test_region_after_eager_geometry(norm, act):
+def test_geometry_inside_region(norm, act):
     model = build(norm=norm, act=act)
     assert_close(check_create_graph(model, make_data()))
 
@@ -118,27 +121,59 @@ def test_whole_model_region():
     assert_close(check_create_graph(model, make_data(), outputs=None))
 
 
+def _complete_energy(data, network):
+    vec, dist = geometry(data)
+    return network(vec, dist, data["src"], data["batch"], data["num_graphs"])
+
+
+class FunctionRegionModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.energy = Energy()
+        self.region = cg.compile(_complete_energy, config=cg.CompileConfig(backend="aot_eager"))
+
+    def forward(self, data):
+        return {"energy": self.region(data, self.energy)}
+
+
+class DecoratedRegionModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.energy = Energy()
+
+    @cg.compile(config=cg.CompileConfig(backend="aot_eager"))
+    def _energy(self, data):
+        return _complete_energy(data, self.energy)
+
+    def forward(self, data):
+        return {"energy": self._energy(data)}
+
+
+@pytest.mark.parametrize("cls", [FunctionRegionModel, DecoratedRegionModel])
+def test_function_and_decorated_regions(cls):
+    assert_close(check_create_graph(build(cls), make_data()))
+
+
 class MixedInputs(Model):
-    """Eager code combines a parameter with positions (mixed input) and computes a
-    parameter-only input (species embedding) before the region."""
+    """Geometry, trainable length scale and species features share one region."""
 
     def __init__(self):
         super().__init__()
         self.length_scale = nn.Parameter(torch.tensor(1.3))
         self.species = nn.Embedding(4, 3)
 
-    def forward(self, data):
+    def _energy(self, data):
         vec, dist = geometry(data)
         vec = vec + self.species(data["z"])[data["src"]]  # parameters only + positions
         dist = dist * self.length_scale  # parameter times positions
-        return {"energy": self.region(vec, dist, data["src"], data["batch"], data["num_graphs"])}
+        return self.energy(vec, dist, data["src"], data["batch"], data["num_graphs"])
 
 
 def test_mixed_and_parameter_only_inputs():
     model = build(MixedInputs)
     errors = check_create_graph(model, make_data())
     assert_close(errors)
-    # the parameters used before the region get their gradients
+    # Parameters in the geometry and feature computation get their gradients too.
     out, grads = cg.create_graph(model, make_data())
     (out["energy"].sum() + grads["pos"].square().sum()).backward()
     assert model.length_scale.grad is not None and model.species.weight.grad.abs().sum() > 0
@@ -187,12 +222,15 @@ class AutogradSemantics(nn.Module):
 class SemanticsModel(nn.Module):
     def __init__(self, features, backend="aot_eager"):
         super().__init__()
-        inner = AutogradSemantics(features)
-        self.region = cg.compile(inner, config=cg.CompileConfig(backend=backend))
+        self.inner = AutogradSemantics(features)
+        self.region = cg.compile(self._energy, config=cg.CompileConfig(backend=backend))
+
+    def _energy(self, data):
+        vec, dist = geometry(data)
+        return self.inner(vec, dist, data["src"], data["batch"], data["num_graphs"])
 
     def forward(self, data):
-        vec, dist = geometry(data)
-        return {"energy": self.region(vec, dist, data["src"], data["batch"], data["num_graphs"])}
+        return {"energy": self.region(data)}
 
 
 @pytest.mark.parametrize(
@@ -229,13 +267,11 @@ class DropoutModel(Model):
         super().__init__(config=cg.CompileConfig(backend="eager"))
         self.drop = nn.Dropout(0.3)
 
-    def forward(self, data):
+    def _energy(self, data):
         vec, dist = geometry(data)
-        return {
-            "energy": self.region(
-                self.drop(vec), dist, data["src"], data["batch"], data["num_graphs"]
-            )
-        }
+        return self.energy(
+            self.drop(vec), dist, data["src"], data["batch"], data["num_graphs"]
+        )
 
 
 def test_dropout_mask_shared_by_forward_and_vjp():
@@ -269,9 +305,7 @@ def test_eval_mode_first_order_and_detached():
 
 class TupleOut(Model):
     def forward(self, data):
-        vec, dist = geometry(data)
-        e = self.region(vec, dist, data["src"], data["batch"], data["num_graphs"])
-        return (e, vec.shape[0])
+        return (self.region(data), data["pos"].shape[0])
 
 
 def test_output_selection():
@@ -281,10 +315,10 @@ def test_output_selection():
 
 
 class Field(Model):
-    def forward(self, data):
+    def _energy(self, data):
         vec, dist = geometry(data)
         vec = vec + data["field"]
-        return {"energy": self.region(vec, dist, data["src"], data["batch"], data["num_graphs"])}
+        return self.energy(vec, dist, data["src"], data["batch"], data["num_graphs"])
 
 
 def test_several_inputs():
@@ -295,9 +329,9 @@ def test_several_inputs():
 
 @dataclasses.dataclass
 class Graph:
-    vec: torch.Tensor
-    dist: torch.Tensor
+    pos: torch.Tensor
     src: torch.Tensor
+    dst: torch.Tensor
     batch: torch.Tensor
     num_graphs: int
 
@@ -317,11 +351,11 @@ class DataclassModel(nn.Module):
         self.region = cg.compile(self._energy, config=cg.CompileConfig(backend="aot_eager"))
 
     def _energy(self, g: Graph):
-        return self.energy(g.vec, g.dist, g.src, g.batch, g.num_graphs)
+        vec = g.pos[g.src] - g.pos[g.dst]
+        return self.energy(vec, vec.norm(dim=-1), g.src, g.batch, g.num_graphs)
 
     def forward(self, data: Batch):
-        vec = data.pos[data.src] - data.pos[data.dst]
-        g = Graph(vec, vec.norm(dim=-1), data.src, data.batch, data.num_graphs)
+        g = Graph(data.pos, data.src, data.dst, data.batch, data.num_graphs)
         return {"energy": self.region(g)}
 
 
@@ -351,15 +385,96 @@ def test_structured_inputs(cls):
 # ---------------------------------------------------------------------------
 
 
-class TwoRegions(Model):
+class OutsideGeometry(nn.Module):
+    """The removed contract: only derived geometry is passed into the region."""
+
     def __init__(self):
         super().__init__()
-        self.region2 = cg.compile(Energy(), config=cg.CompileConfig(backend="aot_eager"))
+        self.energy = Energy()
+        self.region = cg.compile(self.energy, config=cg.CompileConfig(backend="aot_eager"))
 
     def forward(self, data):
         vec, dist = geometry(data)
-        args = (data["src"], data["batch"], data["num_graphs"])
-        return {"energy": self.region(vec, dist, *args) + self.region2(vec, dist, *args)}
+        return {"energy": self.region(vec, dist, data["src"], data["batch"], data["num_graphs"])}
+
+
+class OutsideGeometryWithRawInput(OutsideGeometry):
+    """Passing pos too must not silently omit the derived vec/dist paths."""
+
+    def __init__(self):
+        nn.Module.__init__(self)
+        self.energy = Energy()
+        self.region = cg.compile(self._energy, config=cg.CompileConfig(backend="aot_eager"))
+
+    def _energy(self, data, vec, dist):
+        vec = vec + 0.1 * data["pos"][data["src"]]
+        return self.energy(vec, dist, data["src"], data["batch"], data["num_graphs"])
+
+    def forward(self, data):
+        vec, dist = geometry(data)
+        return {"energy": self.region(data, vec, dist)}
+
+
+class OutsideParameterFeature(nn.Module):
+    """All differentiable preprocessing belongs inside, including parameters."""
+
+    def __init__(self):
+        super().__init__()
+        self.scale = nn.Parameter(torch.tensor(0.3))
+        self.region = cg.compile(self._energy, config=cg.CompileConfig(backend="aot_eager"))
+
+    def _energy(self, data, feature):
+        return (data["pos"].square().sum() * feature).reshape(1)
+
+    def forward(self, data):
+        return {"energy": self.region(data, self.scale.sigmoid())}
+
+
+@pytest.mark.compiled
+@pytest.mark.parametrize(
+    "cls", [OutsideGeometry, OutsideGeometryWithRawInput, OutsideParameterFeature]
+)
+def test_differentiable_preprocessing_outside_region_is_rejected(cls):
+    data = make_data()
+    original_pos = data["pos"]
+    with pytest.raises(cg.ContractError, match="preprocessing"):
+        cg.create_graph(build(cls), data)
+    assert data["pos"] is original_pos
+    assert not original_pos.requires_grad
+
+
+class MissingDifferentiatedInput(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.scale = nn.Parameter(torch.tensor(1.3))
+        self.region = cg.compile(self._energy, config=cg.CompileConfig(backend="aot_eager"))
+
+    def _energy(self, pos):
+        return (self.scale * pos.sin()).sum().reshape(1)
+
+    def forward(self, data):
+        return {"energy": self.region(data["pos"])}
+
+
+@pytest.mark.compiled
+def test_region_must_receive_every_differentiated_input():
+    data = make_data()
+    data["field"] = torch.randn(3, dtype=DTYPE)
+    originals = {name: data[name] for name in ("pos", "field")}
+    with pytest.raises(cg.ContractError, match="missing.*field"):
+        cg.create_graph(build(MissingDifferentiatedInput), data, inputs=("pos", "field"))
+    for name, original in originals.items():
+        assert data[name] is original
+        assert not original.requires_grad
+
+
+class TwoRegions(Model):
+    def __init__(self):
+        super().__init__()
+        self.region2 = cg.compile(self._energy, config=cg.CompileConfig(backend="aot_eager"))
+
+    def forward(self, data):
+        return {"energy": self.region(data) + self.region2(data)}
 
 
 class CallsGrad(Model):
@@ -393,7 +508,7 @@ class ConstantShift(Model):
 @pytest.mark.parametrize(
     "cls, match",
     [
-        (TwoRegions, "both depend on the differentiated inputs"),
+        (TwoRegions, "both receive the differentiated inputs"),
         (CallsGrad, "computed a gradient w.r.t. a differentiated input"),
         (Scaled, "scales or drops entries"),
         (ExtraPositionTerm, "also depends on the differentiated inputs"),
@@ -490,15 +605,18 @@ class Blocks(nn.Module):
 
 
 class BlocksModel(nn.Module):
-    def __init__(self, pattern=r"blocks\.\d+", backend="aot_eager", indexed=False):
+    def __init__(self, pattern=r"net\.blocks\.\d+", backend="aot_eager", indexed=False):
         super().__init__()
         self.net = Blocks(indexed=indexed)
         config = cg.CompileConfig(backend=backend, checkpoint=pattern)
-        self.region = cg.compile(self.net, config=config)
+        self.region = cg.compile(self._energy, config=config)
+
+    def _energy(self, data):
+        vec, dist = geometry(data)
+        return self.net(vec, dist, data["src"], data["batch"], data["num_graphs"])
 
     def forward(self, data):
-        vec, dist = geometry(data)
-        return {"energy": self.region(vec, dist, data["src"], data["batch"], data["num_graphs"])}
+        return {"energy": self.region(data)}
 
 
 @pytest.mark.parametrize("backend", ["eager", "aot_eager"])
@@ -574,18 +692,20 @@ class NeighborFeatures(nn.Module):
 class NeighborModel(nn.Module):
     def __init__(self):
         super().__init__()
-        self.region = cg.compile(
-            NeighborFeatures(), config=cg.CompileConfig(backend="aot_eager")
-        )
+        self.features = NeighborFeatures()
+        self.region = cg.compile(self._energy, config=cg.CompileConfig(backend="aot_eager"))
 
-    def forward(self, data):
+    def _energy(self, data):
         pos = data["pos"]
         k = data["k"]
         # (N, 1, 3) + (K, 3) -> (N, K, 3). K is the neighbor axis and is not padded.
         direction = pos.unsqueeze(1) + pos.new_zeros(k, 3)
         expansion = direction.pow(2).sum(-1, keepdim=True).expand(pos.shape[0], k, 4)
         index = torch.arange(k).expand(pos.shape[0], k).contiguous()
-        return {"energy": self.region(direction, expansion, index)}
+        return self.features(direction, expansion, index)
+
+    def forward(self, data):
+        return {"energy": self.region(data)}
 
 
 def make_neighbor(n, k, seed=0):

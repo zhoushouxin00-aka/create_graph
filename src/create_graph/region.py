@@ -1,24 +1,9 @@
 """
-``cg.compile`` regions and what they do inside ``cg.create_graph``.
+Compiled energy regions that receive the original differentiated inputs.
 
-Outside create_graph a region is ``torch.compile(fn)``. Inside, the region
-that depends on the differentiated inputs runs ``fn`` and
-``torch.autograd.grad(sum(selected output), region inputs, create_graph=True)``
-as ONE compiled graph: Dynamo traces the autograd.grad call, AOTAutograd turns
-autograd's backward formulas into ordinary ATen ops of the forward graph
-(backward1) and derives the backward of the whole graph (backward2). The
-gradients w.r.t. the region inputs are chained to the differentiated inputs
-through the eager code before the region with autograd (create_graph.api).
-
-Region inputs, by what their autograd graph reaches:
-
-- only the differentiated inputs (geometry): enter as detached leaves, so the
-  parameter backward does not run through the geometry a second time;
-- parameters too (eager code mixing both): enter as they are; their
-  cotangents are chained as well and parameter gradients keep flowing;
-- parameters only: enter as they are and are listed in the in-graph
-  autograd.grad (Dynamo refuses to traverse grad_fns from outside the graph),
-  their gradients are dropped (and dead-code eliminated).
+Inside ``cg.create_graph``, a region evaluates the energy and its input
+VJP in one forward graph. Geometry and other differentiable preprocessing
+belong inside that region. AOTAutograd derives the parameter backward.
 """
 
 from __future__ import annotations
@@ -50,10 +35,6 @@ from create_graph.pytree import flatten, is_float, tree_map_tensors, unflatten
 
 _autograd_grad = torch.autograd.grad
 
-# leaf kinds an autograd graph reaches
-INPUT, OTHER = 1, 2
-
-
 # ---------------------------------------------------------------------------
 # output selection
 # ---------------------------------------------------------------------------
@@ -78,32 +59,11 @@ def select_output(out, outputs):
 
 @dataclasses.dataclass
 class RegionResult:
-    """What the energy region produced: its selected output and, per
-    differentiated region input, the gradient to chain."""
+    """Energy and gradients with respect to the named API inputs."""
 
     name: str
     selected: Tensor
-    # ("chain", region input, grad): chained through the eager code before the region
-    # ("direct", index of the differentiated input, grad): the input itself
-    items: list[tuple[str, Any, Tensor | None]]
-
-    def input_grads(self, leaves: list[Tensor], train: bool) -> list[Tensor | None]:
-        grads: list[Tensor | None] = [None] * len(leaves)
-        chain = [(x, g) for kind, x, g in self.items if kind == "chain" and g is not None]
-        if chain:
-            grads = list(
-                _autograd_grad(
-                    [x for x, _ in chain],
-                    leaves,
-                    [g for _, g in chain],
-                    create_graph=train,
-                    allow_unused=True,
-                )
-            )
-        for kind, index, g in self.items:
-            if kind == "direct" and g is not None:
-                grads[index] = g if grads[index] is None else grads[index] + g
-        return grads
+    grads: dict[str, Tensor | None]
 
 
 @dataclasses.dataclass
@@ -112,7 +72,6 @@ class State:
     train: bool
     exact: bool
     outputs: Any
-    memo: dict = dataclasses.field(default_factory=dict)
     region: RegionResult | None = None
 
     def leaf_index(self) -> dict[int, int]:
@@ -124,38 +83,6 @@ STATES: list[State] = []
 
 def active_state() -> State | None:
     return STATES[-1] if STATES else None
-
-
-def _node_kinds(node, state: State) -> int:
-    memo, inputs = state.memo, state.leaf_index()
-    if node in memo:
-        return memo[node]
-    stack = [(node, False)]
-    while stack:
-        current, done = stack.pop()
-        if current in memo:
-            continue
-        children = [c for c, _ in current.next_functions if c is not None]
-        if not done:
-            stack.append((current, True))
-            stack.extend((c, False) for c in children if c not in memo)
-            continue
-        kinds = 0
-        variable = getattr(current, "variable", None)
-        if variable is not None:
-            kinds = INPUT if id(variable) in inputs else OTHER
-        for child in children:
-            kinds |= memo[child]
-        memo[current] = kinds
-    return memo[node]
-
-
-def tensor_kinds(t: Tensor, state: State) -> int:
-    if not (is_float(t) and t.requires_grad):
-        return 0
-    if t.grad_fn is None:
-        return INPUT if id(t) in state.leaf_index() else OTHER
-    return _node_kinds(t.grad_fn, state)
 
 
 # ---------------------------------------------------------------------------
@@ -225,14 +152,14 @@ _MEM_STEPS = [0]
 _MEM_PEAK = [0]
 
 
-def _region_body(fn, args, kwargs, wrt, keep, outputs, create):
+def _region_body(fn, args, kwargs, wrt, outputs, create):
     with torch.enable_grad():
         out = fn(*args, **kwargs)
         target = select_output(out, outputs)
         grads = _autograd_grad(target.sum(), wrt, create_graph=create, allow_unused=True)
     if not create:
         out = tree_map_tensors(lambda t: t.detach(), out)
-    return out, tuple(g for g, k in zip(grads, keep, strict=True) if k)
+    return out, grads
 
 
 def _compiled(kind: str, region: Region):
@@ -377,84 +304,75 @@ def _modules_of(region: Region, leaves: list) -> list[nn.Module]:
     return roots
 
 
-def _plain_attributes(state: State, leaves: list) -> list[tuple[object, str, Tensor, int]]:
-    """(object, name, tensor, kinds) for float tensor attributes of plain objects
-    (fairchem's AtomicData, ...) among the region inputs that require grad."""
+def _tensor_attributes(leaves: list) -> list[tuple[object, str, Tensor]]:
+    """Tensor fields of plain batch objects that are opaque to our pytree."""
     found = []
     for obj in leaves:
         if obj is None or isinstance(obj, Tensor | nn.Module | int | float | bool | str):
             continue
         holder = getattr(obj, "__dict__", None)
-        if not isinstance(holder, dict):
-            continue
-        for name, value in list(holder.items()):
-            if isinstance(value, Tensor):
-                kinds = tensor_kinds(value, state)
-                if kinds:
-                    found.append((obj, name, value, kinds))
+        if isinstance(holder, dict):
+            found.extend((obj, name, value) for name, value in holder.items() if is_float(value))
     return found
 
 
 def region_call(state: State, region: Region, args, kwargs):
     leaves, spec = flatten((args, kwargs))
-    kinds = [tensor_kinds(x, state) if isinstance(x, Tensor) else 0 for x in leaves]
-    attributes = _plain_attributes(state, leaves)
-    if not any(k & INPUT for k in kinds) and not any(k & INPUT for *_, k in attributes):
-        # does not depend on the differentiated inputs: an ordinary compiled call
+    attributes = _tensor_attributes(leaves)
+    tensors = [x for x in leaves if isinstance(x, Tensor)]
+    tensors.extend(value for _, _, value in attributes)
+    input_ids = {id(value) for value in state.leaves.values()}
+    present = input_ids.intersection(id(value) for value in tensors)
+    external_graph = any(value.requires_grad and value.grad_fn is not None for value in tensors)
+    if external_graph:
+        raise ContractError(
+            "create_graph: differentiable preprocessing outside a cg.compile region is not "
+            "supported. Pass the original differentiated inputs directly to the region and "
+            "move their geometry and other differentiable preprocessing inside it."
+        )
+    if not present:
         return region.normal(*args, **kwargs)
+    if present != input_ids:
+        missing = [name for name, value in state.leaves.items() if id(value) not in present]
+        raise ContractError(
+            "create_graph: the energy region must receive every differentiated input "
+            f"directly; missing {missing}. Move the complete energy computation into one "
+            "cg.compile region."
+        )
     if state.region is not None:
         raise ContractError(
-            f"create_graph: regions {state.region.name} and {region.name} both depend on the "
+            f"create_graph: regions {state.region.name} and {region.name} both receive the "
             "differentiated inputs. Exactly one region may produce the differentiated output: "
-            "merge them into one cg.compile region (e.g. backbone network and energy head)."
+            "merge them into one cg.compile region."
         )
 
-    inputs = state.leaf_index()
-    wrt: list[Tensor] = []
-    keep: list[bool] = []
-    items: list[tuple[str, Any]] = []
-    replaced: dict[int, Tensor] = {}
-
-    def enter(x: Tensor, k: int) -> Tensor:
-        if id(x) in replaced:
-            return replaced[id(x)]
-        if k == INPUT or id(x) in inputs:
-            # geometry (or the input itself): a detached leaf, chained afterwards
-            new = x.detach().requires_grad_(True)
-            wrt.append(new)
-            keep.append(True)
-            items.append(("direct", inputs[id(x)]) if id(x) in inputs else ("chain", x))
-        else:
-            new = x
-            wrt.append(x)
-            keep.append(bool(k & INPUT))
-            if k & INPUT:
-                items.append(("chain", x))
-        replaced[id(x)] = new
-        return new
-
-    new_leaves = [enter(x, k) if k else x for x, k in zip(leaves, kinds, strict=True)]
-    swaps = [(obj, name, value, enter(value, k)) for obj, name, value, k in attributes]
-    new_args, new_kwargs = unflatten(spec, new_leaves)
+    # The API inputs carry hooks that reject force computation by the model.
+    # The region differentiates its own leaves and returns their gradients
+    # directly, in API input order; no geometry graph is traversed here.
+    replacements = {
+        id(value): value.detach().requires_grad_(True) for value in state.leaves.values()
+    }
+    wrt = tuple(replacements[id(value)] for value in state.leaves.values())
+    new_args, new_kwargs = unflatten(spec, [replacements.get(id(x), x) for x in leaves])
+    swaps = [
+        (obj, name, value, replacements[id(value)])
+        for obj, name, value in attributes
+        if id(value) in replacements
+    ]
     outputs = region.outputs if region.outputs is not None else state.outputs
-
     for obj, name, _, new in swaps:
         setattr(obj, name, new)
     try:
-        _check_functions(region, new_args, new_kwargs, wrt)
+        _check_functions(region, new_args, new_kwargs, list(wrt))
         _note_step_memory()
         if region.config.dynamic:
             mark_region_inputs(new_args, new_kwargs, wrt)
         if region.config.checkpoint is not None:
-            out, grads = _checkpointed(
-                state, region, new_args, new_kwargs, new_leaves, wrt, keep, outputs
-            )
+            out, grads = _checkpointed(state, region, new_args, new_kwargs, leaves, wrt, outputs)
         else:
             body = _compiled("train" if state.train else "eval", region)
             with compile_context(region.config, joint=True):
-                out, grads = body(
-                    region.fn, new_args, new_kwargs, tuple(wrt), tuple(keep), outputs, state.train
-                )
+                out, grads = body(region.fn, new_args, new_kwargs, wrt, outputs, state.train)
     finally:
         for obj, name, original, _ in swaps:
             setattr(obj, name, original)
@@ -468,12 +386,12 @@ def region_call(state: State, region: Region, args, kwargs):
     state.region = RegionResult(
         name=region.name,
         selected=selected,
-        items=[(kind, ref, g) for (kind, ref), g in zip(items, grads, strict=True)],
+        grads=dict(zip(state.leaves, grads, strict=True)),
     )
     return out
 
 
-def _checkpointed(state, region, args, kwargs, leaves, wrt, keep, outputs):
+def _checkpointed(state, region, args, kwargs, leaves, wrt, outputs):
     runner = _compiled("blocks", region)
     roots = _modules_of(region, leaves)
     with checkpointed_blocks(roots, region.config.checkpoint, runner), torch.enable_grad():
@@ -483,4 +401,4 @@ def _checkpointed(state, region, args, kwargs, leaves, wrt, keep, outputs):
         grads = _autograd_grad(target.sum(), wrt, create_graph=state.train, allow_unused=True)
     if not state.train:
         out = tree_map_tensors(lambda t: t.detach(), out)
-    return out, tuple(g for g, k in zip(grads, keep, strict=True) if k)
+    return out, grads
